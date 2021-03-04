@@ -1,0 +1,46 @@
+.widget-form-container .el-container, 
+.widget-form-container .el-header,
+.widget-form-container .el-aside,
+.widget-form-container .el-row,
+.widget-form-container .el-col,
+.widget-form-container .el-button-group,
+.widget-form-container .el-link,
+.widget-form-container .el-radio-group {
+  min-height: 20px;
+  outline: 1px solid rgba(101, 160, 83, 0.1);
+  min-width: 10px;
+}
+.widget-form-container [id] {
+  outline: 1px solid rgba(101, 160, 83, 0.1);
+}
+// .widget-form-container [selected="selected"]::after {
+//   content: "组件放置区";
+//   display: block;
+//   font-size: 12px;
+//   line-height: 20px;
+//   text-align: center;
+//   background-color: rgba(101, 160, 83, 0.1);
+//   color: rgba(101, 160, 83, 1);
+// }
+.widget-form-container span[id] {
+  display: inline-block;
+  min-height: 10px;
+  min-width: 10px;
+}
+
+.el-radio+.el-radio{
+  margin-left: 0 !important;
+}
+.el-radio{
+  margin-right: 30px;
+  line-height: 32px;
+}
+.el-checkbox+.el-checkbox{
+  margin-left: 0 !important;
+}
+.el-checkbox{
+  margin-right: 30px;
+}
+.attribute-page-common {
+  width: 100%;
+}

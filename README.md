@@ -1,2 +1,1 @@
-# meteor-vscode-web
-meteor vscode webview
+## 通过设置rootPath来进入不同页面

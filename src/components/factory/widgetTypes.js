@@ -1,0 +1,23 @@
+export default {
+  basicText: 'basic.text',
+  basicBlock: 'basic.block',
+  basicInput: 'basic.input',
+  basicIcon: 'basic.icon',
+  basicElButton: 'basic.elButton',
+  basicElLink: 'basic.elLink',
+  basicElRadio: 'basic.elRadio',
+  basicElRadioGroup: 'basic.elRadioGroup',
+  basicElCheckbox: 'basic.elCheckbox',
+  basicElCheckboxGroup: 'basic.elCheckboxGroup',
+  basicElButtonGroup: 'basic.elButtonGroup',
+  layoutContainer: 'layout.container',
+  layoutElHeader: 'layout.elHeader',
+  layoutElAside: 'layout.elAside',
+  layoutElFooter: 'layout.elFooter',
+  layoutElRow: 'layout.elRow',
+  layoutElCol: 'layout.elCol',
+  basicElInputNumber: 'basic.elInputNumber',
+  basicElSelect: 'basic.elSelect',
+  basicElOption: 'basic.elOption',
+  layoutElMain: 'layout.elMain'
+}
