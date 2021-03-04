@@ -1,5 +1,5 @@
-src='/Users/sjl/Documents/gitlab/zlst-vue/dist'
-dist='/Users/sjl/Documents/gitlab/zlst/media'
+src='/Users/sjl/Documents/github/meteor-vscode-web/dist'
+dist='/Users/sjl/Documents/github/meteor-vscode/media'
 echo '开始操作'
 yarn build
 echo '编译完成，开始拷贝！'
