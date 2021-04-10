@@ -17,12 +17,6 @@ Vue.prototype.$http = request.http
 Vue.prototype.$bus = new Vue()
 Vue.prototype.widgetConfig = widgetConfig
 Vue.prototype.$componentName = Object.assign(Vue.prototype.$componentName, ComponentAttribute.componentName)
-// Vue.prototype.global = {
-//   data: {
-//     name: '122'
-//   },
-//   event: {}
-// } // 全局变量
 Vue.use(ElementUI)
 Vue.use(PageFactory)
 Vue.component('draggable', Draggable)

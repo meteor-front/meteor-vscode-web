@@ -1,19 +1,7 @@
 <template>
   <div class="zl-page">
-    <el-form ref="form" class="zl-filter" :model="form" label-width="80px" size="mini" inline>
-      <el-form-item label="分类">
-        <el-select v-model="form.tag" placeholder="分类" @change="selTag">
-          <el-option v-for="tag in tagList" :key="tag.name" :label="tag.name" :value="tag.name" />
-        </el-select>
-      </el-form-item>
-      <el-form-item label="">
-        <el-input v-model="form.searchValue" placeholder="请输入页面名称" @keyup.enter.native="fetchList" />
-      </el-form-item>
-      <el-form-item label="">
-        <el-button type="primary" icon="el-icon-search" @click="fetchList">查询</el-button>
-      </el-form-item>
-    </el-form>
-    <div class="zl-page-list">
+    <search ref="search" :tag-list="tagList" tab="1" @fetchList="fetchList" />
+    <div v-loading="loading" class="zl-page-list">
       <div v-for="page in pageList" :key="page.id" class="zl-page-item">
         <div class="zl-page-head">
           <div class="zl-page-title">{{ page.description.name }}</div>
@@ -27,25 +15,18 @@
           <el-button type="primary" circle size="mini" icon="el-icon-delete" @click="deletePage(page)" />
         </div>
       </div>
+      <no-data v-if="pageList.length === 0 && !loading" />
     </div>
-    <!-- <el-pagination
-      class="zl-pagination"
-      :current-page="pageNum"
-      :page-sizes="[10, 20, 50]"
-      :page-size="pageSize"
-      layout="total, sizes, prev, pager, next, jumper"
-      :total="totalCount"
-      @size-change="handleSizeChange"
-      @current-change="handleCurrentChange"
-    /> -->
 
   </div>
 </template>
 <script type="text/javascript">
 import request from '@/util/request'
-// import { cloneDeep } from 'lodash'
+import search from '../search.vue'
+import noData from './../commons/noData.vue'
 
 export default {
+  components: { search, noData },
   props: {
     tagList: {
       type: Array,
@@ -56,14 +37,11 @@ export default {
   },
   data() {
     return {
-      form: {
-        tag: '',
-        searchValue: ''
-      },
       pageNum: 1,
       pageSize: 10,
       totalCount: 1,
-      pageList: []
+      pageList: [],
+      loading: false
     }
   },
   created() {
@@ -73,7 +51,9 @@ export default {
       }
     })
     this.$bus.$on('refreshWidget', this.fetchList)
-    this.fetchList()
+  },
+  mounted() {
+    this.fetchList(this.$refs.search.form)
   },
   methods: {
     preview(page) {
@@ -97,21 +77,13 @@ export default {
     modify(page) {
       this.$emit('pageModify', page)
     },
-    selTag(tag) {
-      this.fetchList()
-    },
-    handleCurrentChange(pageNum) {
-      this.pageNum = pageNum
-      this.fetchList()
-    },
-    handleSizeChange(pageSize) {
-      this.pageSize = pageSize
-      this.fetchList()
-    },
-    fetchList() {
-      request.get('widget?tag=' + this.form.tag + '&type=1&searchValue=' + this.form.searchValue).then((res) => {
+    fetchList(form) {
+      this.loading = true
+      request.get('widget?tag=' + form.tag + '&type=1&searchValue=' + form.searchValue + '&badge=' + form.badge).then((res) => {
         this.pageList = res.data
+        this.loading = false
       }).catch((err) => {
+        this.loading = false
         console.error(err)
       })
     }
@@ -124,14 +96,12 @@ export default {
   flex-direction: column;
   width: 100%;
 }
-.zl-filter {
-  margin-top: 20px;
-}
 .zl-page-list {
   flex: 1;
   overflow: auto;
   padding: 10px 20px 20px 20px;
   background-color: #f5f5f5;
+  min-height: 200px;
 }
 .zl-page-item {
   position: relative;
@@ -144,6 +114,8 @@ export default {
   padding-bottom: 26px;
   overflow: hidden;
   cursor: pointer;
+  background-color: rgba(78, 176, 123, 0.078);
+  border: 1px solid rgba(78, 176, 124, 0.3);
   &:hover {
     .zl-page-mani {
       display: block;
@@ -160,7 +132,7 @@ export default {
   font-size: 14px;
   font-weight: bold;
   padding: 5px 10px;
-  background-color: rgba(0, 0, 0, 0.3);
+  background-color: #4eb07b;
   .zl-page-title {
     flex: 1;
     color: #fff;

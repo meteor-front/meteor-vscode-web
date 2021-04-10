@@ -1,8 +1,7 @@
 <template>
   <div class="zl-page">
     <div class="zl-header">
-      <img class="zl-logo" :src="logoUrl">
-      <div class="zl-title">Meteor</div>
+      <img class="zl-logo" src="~@/assets/images/logo.png">
       <div class="zl-tabs">
         <el-tabs v-model="tabActive" @tab-click="tabSwitch">
           <el-tab-pane name="1" label="页面" />
@@ -24,8 +23,8 @@
       </div>
     </div>
     <div class="zl-container">
-      <page-list v-if="tagList.length > 0 && tabActive === '1'" ref="pageList" :config="formConfig" :tag-list="tagList" @pageModify="pageModify" @preview="preview" />
-      <component-list v-if="tagList.length > 0 && tabActive === '2'" ref="pageFactory" :config="formConfig" :tag-list="tagList" @componentModify="componentModify" @preview="preview" />
+      <page-list v-if="tagList.length > 0 && tabActive === '1'" ref="tab1" :config="formConfig" :tag-list="tagList" @pageModify="pageModify" @preview="preview" />
+      <component-list v-if="tagList.length > 0 && tabActive === '2'" ref="tab2" :config="formConfig" :tag-list="tagList" @componentModify="componentModify" @preview="preview" />
       <!-- <page-factory v-if="tagList.length > 0 && tabActive === '2'" ref="pageFactory" :config="formConfig" :tag-list="tagList" @generate="generate" /> -->
     </div>
     <!-- 配置信息弹框 -->
@@ -183,7 +182,7 @@ import request from '@/util/request'
 import { v4 as uuid } from 'uuid'
 import pageList from '@/components/pageList/index'
 import componentList from '@/components/componentList/index'
-import eruda from 'eruda'
+// import eruda from 'eruda'
 export default {
   components: {
     pageList,
@@ -247,12 +246,14 @@ export default {
   created() {
     this.tabActive = this.$route.query.tab || '1'
     this.baseUrl = utils.constant.uploadUrl
-    this.mock()
+    if (process.env.NODE_ENV === 'development') {
+      this.mock()
+    }
     // this.openUploadDialog('0')
   },
   mounted() {
     this.$nextTick(() => {
-      eruda.init()
+      // eruda.init()
       // eslint-disable-next-line no-undef
       this.vscode = acquireVsCodeApi()
       window.addEventListener('message', this.messageHandle)
@@ -708,14 +709,15 @@ export default {
 <style rel="stylesheet/scss" lang="scss" scoped>
 .zl-header{
   height: 40px;
-  padding: 0 10px;
-  background-color: #409EFF;
+  padding: 0 10px 0 20px;
+  background-color: #3eaf7c;
   position: relative;
   text-align: left;
 
   .zl-logo{
-    height: 26px;
-    vertical-align: middle;
+    height: 20px;
+    vertical-align: top;
+    margin-top: 8px;
   }
   .zl-title{
     display: inline-block;
@@ -740,7 +742,10 @@ export default {
   }
   .el-tabs__item.is-active {
     color: #fff;
-    background-color: #67C23A;
+    background-color: #039252;
+  }
+  .el-tabs__nav-wrap::after {
+    height: 0;
   }
   .el-tabs__active-bar {
     display: none;
@@ -756,7 +761,7 @@ export default {
 .component-list {
   position: relative;
   margin-bottom: 20px;
-  background-color: #f5f5f5;
+  background-color: rgba(78, 176, 124, 0.18);
   padding-top: 20px;
   padding-right: 20px;
   padding-bottom: 2px;

@@ -13,7 +13,7 @@
         <el-button type="primary" icon="el-icon-search" @click="fetchList">查询</el-button>
       </el-form-item>
     </el-form>
-    <div class="zl-page-list">
+    <div v-loading="loading" class="zl-page-list">
       <div v-for="page in pageList" :key="page.id" class="zl-page-item">
         <div class="zl-page-head">
           <div class="zl-page-title">{{ page.description.name }}</div>
@@ -27,6 +27,7 @@
           <el-button type="primary" circle size="mini" icon="el-icon-delete" @click="deletePage(page)" />
         </div>
       </div>
+      <no-data v-if="pageList.length === 0 && !loading" />
     </div>
     <!-- <el-pagination
       class="zl-pagination"
@@ -43,9 +44,11 @@
 </template>
 <script type="text/javascript">
 import request from '@/util/request'
+import noData from './../commons/noData.vue'
 // import { cloneDeep } from 'lodash'
 
 export default {
+  components: { noData },
   props: {
     tagList: {
       type: Array,
@@ -63,7 +66,8 @@ export default {
       pageNum: 1,
       pageSize: 10,
       totalCount: 1,
-      pageList: []
+      pageList: [],
+      loading: false
     }
   },
   created() {
@@ -109,9 +113,12 @@ export default {
       this.fetchList()
     },
     fetchList() {
+      this.loading = true
       request.get('widget?tag=' + this.form.tag + '&type=0&searchValue=' + this.form.searchValue).then((res) => {
         this.pageList = res.data
+        this.loading = false
       }).catch((err) => {
+        this.loading = false
         console.error(err)
       })
     }
@@ -132,6 +139,7 @@ export default {
   overflow: auto;
   padding: 10px 20px 20px 20px;
   background-color: #f5f5f5;
+  min-height: 200px;
 }
 .zl-page-item {
   position: relative;
@@ -144,6 +152,8 @@ export default {
   padding-bottom: 26px;
   overflow: hidden;
   cursor: pointer;
+  background-color: rgba(78, 176, 123, 0.078);
+  border: 1px solid rgba(78, 176, 124, 0.3);
   &:hover {
     .zl-page-mani {
       display: block;
@@ -160,7 +170,7 @@ export default {
   font-size: 14px;
   font-weight: bold;
   padding: 5px 10px;
-  background-color: rgba(0, 0, 0, 0.3);
+  background-color: #4eb07b;
   .zl-page-title {
     flex: 1;
     color: #fff;
