@@ -245,7 +245,7 @@ export default {
     }
   },
   created() {
-    this.tabActive = this.$route.query.tab || '2'
+    this.tabActive = this.$route && this.$route.query && this.$route.query.tab || '1'
     this.baseUrl = utils.constant.uploadUrl
     if (process.env.NODE_ENV === 'development') {
       this.mock()
