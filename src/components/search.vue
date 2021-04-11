@@ -8,7 +8,7 @@
     <el-form-item label="">
       <el-input v-model="form.searchValue" :placeholder="placeholderSearch" @keyup.enter.native="fetchList" />
     </el-form-item>
-    <el-form-item label="">
+    <el-form-item label="" class="zl-search-btn">
       <el-button type="primary" icon="el-icon-search" @click="fetchList">查询</el-button>
     </el-form-item>
   </el-form>
@@ -42,7 +42,7 @@ export default {
         '1': '页面',
         '2': '组件'
       }
-      return `请输入${tabNames[this.tab]}名称`
+      return `请输入${tabNames[this.tab]}名称，enter查询`
     }
   },
   created() {
@@ -72,5 +72,15 @@ export default {
 }
 .w100 {
   width: 100px;
+}
+@media screen and (max-width: 600px) {
+  .zl-filter.el-form {
+    .el-input {
+      margin-left: 10px;
+    }
+    .zl-search-btn {
+      display: none;
+    }
+  }
 }
 </style>

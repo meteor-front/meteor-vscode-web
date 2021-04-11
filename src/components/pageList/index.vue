@@ -5,9 +5,13 @@
       <div v-for="page in pageList" :key="page.id" class="zl-page-item">
         <div class="zl-page-head">
           <div class="zl-page-title">{{ page.description.name }}</div>
+          <div class="zl-paeg-collect">
+            <i :class="page.collection === '1' ? 'el-icon-star-on' : 'el-icon-star-off'" @click="collection(page)" />
+          </div>
         </div>
         <div class="zl-page-container">
           <img :src="page.description.avatar || 'https://www.80fight.cn/zlst/default.png'" alt="">
+          <div class="zl-app" @click="preview(page)" />
         </div>
         <div class="zl-page-mani">
           <el-button type="primary" circle size="mini" icon="el-icon-full-screen" @click="preview(page)" />
@@ -45,17 +49,15 @@ export default {
     }
   },
   created() {
-    this.tagList.forEach(tag => {
-      if (tag.own) {
-        this.form.tag = tag.name
-      }
-    })
     this.$bus.$on('refreshWidget', this.fetchList)
   },
   mounted() {
-    this.fetchList(this.$refs.search.form)
+    this.fetchList()
   },
   methods: {
+    collection(page) {
+      this.$emit('collection', page)
+    },
     preview(page) {
       this.$emit('preview', page)
     },
@@ -77,7 +79,8 @@ export default {
     modify(page) {
       this.$emit('pageModify', page)
     },
-    fetchList(form) {
+    fetchList() {
+      const form = this.$refs.search.form
       this.loading = true
       request.get('widget?tag=' + form.tag + '&type=1&searchValue=' + form.searchValue + '&badge=' + form.badge).then((res) => {
         this.pageList = res.data
@@ -113,7 +116,6 @@ export default {
   margin-bottom: 10px;
   padding-bottom: 26px;
   overflow: hidden;
-  cursor: pointer;
   background-color: rgba(78, 176, 123, 0.078);
   border: 1px solid rgba(78, 176, 124, 0.3);
   &:hover {
@@ -136,6 +138,10 @@ export default {
   .zl-page-title {
     flex: 1;
     color: #fff;
+    word-wrap:normal;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
   .zl-page-type {
     color: #fff;
@@ -163,5 +169,30 @@ export default {
 .zl-pagination {
   padding: 10px;
   text-align: center;
+}
+.zl-paeg-collect {
+  font-size: 16px;
+  color: #fff;
+  cursor: pointer;
+}
+@media screen and (max-width: 600px) {
+  .zl-page-item {
+    &:hover {
+      .zl-page-mani {
+        display: none;
+      }
+    }
+  }
+  .zl-page-container {
+    .zl-app {
+      margin: auto;
+      position: absolute;
+      left: 0;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      z-index: 9;
+    }
+  }
 }
 </style>

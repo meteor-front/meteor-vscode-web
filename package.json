@@ -53,7 +53,8 @@
     "rollup-plugin-uglify-es": "0.0.1",
     "rollup-plugin-vue": "^3.0.0",
     "sass-loader": "^9.0.3",
-    "vue-template-compiler": "^2.6.11"
+    "vue-template-compiler": "^2.6.11",
+    "vue-zoom-on-hover": "^1.0.5"
   },
   "eslintConfig": {
     "root": true,

@@ -2,6 +2,7 @@
   <div class="zl-page">
     <div class="zl-header">
       <img class="zl-logo" src="~@/assets/images/logo.png">
+      <img class="zl-logo-mini" src="~@/assets/images/logo-mini.png">
       <div class="zl-tabs">
         <el-tabs v-model="tabActive" @tab-click="tabSwitch">
           <el-tab-pane name="1" label="页面" />
@@ -23,8 +24,8 @@
       </div>
     </div>
     <div class="zl-container">
-      <page-list v-if="tagList.length > 0 && tabActive === '1'" ref="tab1" :config="formConfig" :tag-list="tagList" @pageModify="pageModify" @preview="preview" />
-      <component-list v-if="tagList.length > 0 && tabActive === '2'" ref="tab2" :config="formConfig" :tag-list="tagList" @componentModify="componentModify" @preview="preview" />
+      <page-list v-if="tagList.length > 0 && tabActive === '1'" ref="tab1" :config="formConfig" :tag-list="tagList" @pageModify="pageModify" @preview="preview" @collection="collection" />
+      <component-list v-if="tagList.length > 0 && tabActive === '2'" ref="tab2" :config="formConfig" :tag-list="tagList" @componentModify="componentModify" @preview="preview" @collection="collection" />
       <!-- <page-factory v-if="tagList.length > 0 && tabActive === '2'" ref="pageFactory" :config="formConfig" :tag-list="tagList" @generate="generate" /> -->
     </div>
     <!-- 配置信息弹框 -->
@@ -244,7 +245,7 @@ export default {
     }
   },
   created() {
-    this.tabActive = this.$route.query.tab || '1'
+    this.tabActive = this.$route.query.tab || '2'
     this.baseUrl = utils.constant.uploadUrl
     if (process.env.NODE_ENV === 'development') {
       this.mock()
@@ -267,6 +268,24 @@ export default {
     }
   },
   methods: {
+    // 收藏
+    collection(page) {
+      console.log(page.collection)
+      request.post('/collection', {
+        componentId: page.id,
+        userId: this.user.token,
+        status: page.collection === '1' ? '0' : '1'
+      }).then((res) => {
+        console.log(res)
+        this.$message({
+          message: page.collection === '1' ? '收藏成功！' : '取消收藏！',
+          type: 'success'
+        })
+        this.$bus.$emit('refreshWidget')
+      }).catch((err) => {
+        console.error(err)
+      })
+    },
     changeCategory() {
       if (this.formUpload.block === 1) {
         this.setBlockTabList()
@@ -708,6 +727,7 @@ export default {
 </script>
 <style rel="stylesheet/scss" lang="scss" scoped>
 .zl-header{
+  overflow: hidden;
   height: 40px;
   padding: 0 10px 0 20px;
   background-color: #3eaf7c;
@@ -785,6 +805,7 @@ export default {
   text-align: center;
   image {
     max-height: 600px;
+    max-width: 100%;
   }
 }
 .ml10 {
@@ -792,5 +813,52 @@ export default {
 }
 .zl-block {
   display: block;
+}
+.zl-logo-mini {
+  display: none;
+}
+@media screen and (max-width: 600px) {
+  .zl-header {
+    padding: 0 0 0 10px;
+    .zl-right {
+      display: none;
+    }
+    .zl-logo {
+      display: none;
+    }
+    .zl-logo-mini {
+      display: inline-block;
+      margin-top: 4px;
+    }
+    .zl-tabs {
+      margin-left: 0;
+      float: right;
+    }
+  }
+  .el-dialog__wrapper /deep/ {
+    .el-dialog {
+      margin-top: 0!important;
+      margin-bottom: 0!important;
+      width: 100%;
+      height: 100%;
+    }
+    .el-dialog__body {
+      padding: 20px 8px;
+      height: calc(100% - 90px);
+    }
+  }
+  .m-preview {
+    position: relative;
+    overflow: auto;
+    height: 100%;
+    img {
+      margin: auto;
+      position: absolute;
+      left: 0;
+      top: 0;
+      right: 0;
+      bottom: 0;
+    }
+  }
 }
 </style>

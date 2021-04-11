@@ -1,7 +1,7 @@
 <template>
   <div class="zl-no-data">
     <img src="../../assets/images/nodata.png">
-    <p>暂无数据</p>
+    <p>还没有数据哦！请赶快来上传吧~~</p>
   </div>
 </template>
 <script type="text/javascript">
