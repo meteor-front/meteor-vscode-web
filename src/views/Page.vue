@@ -278,7 +278,7 @@ export default {
       }).then((res) => {
         console.log(res)
         this.$message({
-          message: page.collection === '1' ? '收藏成功！' : '取消收藏！',
+          message: page.collection === '1' ? '取消收藏！' : '收藏成功！',
           type: 'success'
         })
         this.$bus.$emit('refreshWidget')
