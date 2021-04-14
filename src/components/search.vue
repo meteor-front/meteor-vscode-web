@@ -73,7 +73,7 @@ export default {
 .w100 {
   width: 100px;
 }
-@media screen and (max-width: 600px) {
+@media screen and (max-width: 550px) {
   .zl-filter.el-form {
     .el-input {
       margin-left: 10px;

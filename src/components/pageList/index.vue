@@ -14,9 +14,13 @@
           <div class="zl-app" @click="preview(page)" />
         </div>
         <div class="zl-page-mani">
+          <el-button type="primary" circle size="mini" icon="el-icon-plus" @click="add(page)" />
           <el-button type="primary" circle size="mini" icon="el-icon-full-screen" @click="preview(page)" />
           <el-button type="primary" circle size="mini" icon="el-icon-edit" @click="modify(page)" />
           <el-button type="primary" circle size="mini" icon="el-icon-delete" @click="deletePage(page)" />
+        </div>
+        <div class="zl-page-mani-app">
+          <el-button type="primary" circle size="mini" icon="el-icon-plus" @click="add(page)" />
         </div>
       </div>
       <no-data v-if="pageList.length === 0 && !loading" />
@@ -55,6 +59,13 @@ export default {
     this.fetchList()
   },
   methods: {
+    add(page) {
+      this.$emit('add', {
+        name: page.description.name,
+        type: '1',
+        description: `(${page.category})`
+      })
+    },
     collection(page) {
       this.$emit('collection', page)
     },
@@ -115,7 +126,6 @@ export default {
   margin-right: 10px;
   margin-bottom: 10px;
   padding-bottom: 26px;
-  overflow: hidden;
   background-color: rgba(78, 176, 123, 0.078);
   border: 1px solid rgba(78, 176, 124, 0.3);
   &:hover {
@@ -175,7 +185,10 @@ export default {
   color: #fff;
   cursor: pointer;
 }
-@media screen and (max-width: 600px) {
+.zl-page-mani-app {
+  display: none;
+}
+@media screen and (max-width: 550px) {
   .zl-page-item {
     &:hover {
       .zl-page-mani {
@@ -193,6 +206,13 @@ export default {
       bottom: 0;
       z-index: 9;
     }
+  }
+  .zl-page-mani-app {
+    display: block;
+    position: absolute;
+    right: -8px;
+    top: -8px;
+    z-index: 9;
   }
 }
 </style>

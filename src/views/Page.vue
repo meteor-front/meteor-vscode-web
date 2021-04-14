@@ -1,5 +1,5 @@
 <template>
-  <div class="zl-page">
+  <div class="zl-page" @mouseover="overPage">
     <div class="zl-header">
       <img class="zl-logo" src="~@/assets/images/logo.png">
       <img class="zl-logo-mini" src="~@/assets/images/logo-mini.png">
@@ -19,13 +19,13 @@
         <!-- <el-button v-if="user" type="text" size="medium" icon="el-icon-document" @click="generateCode">生成代码</el-button> -->
         <!-- <el-button type="text" size="medium" icon="el-icon-document" @click="generatePageStyle">样式</el-button> -->
         <!-- <el-button v-if="user" type="text" icon="el-icon-setting" @click="visibleConfig = true">配置信息</el-button> -->
-        <span v-if="user" class="zl-user" @click="showLoginDialog">欢迎您，{{ user.name }}</span>
+        <span v-if="user" class="zl-user" @click="showLoginDialog">{{ user.name }}</span>
         <el-button v-else type="text" icon="el-icon-user" @click="showLoginDialog">登录</el-button>
       </div>
     </div>
     <div class="zl-container">
-      <page-list v-if="tagList.length > 0 && tabActive === '1'" ref="tab1" :config="formConfig" :tag-list="tagList" @pageModify="pageModify" @preview="preview" @collection="collection" />
-      <component-list v-if="tagList.length > 0 && tabActive === '2'" ref="tab2" :config="formConfig" :tag-list="tagList" @componentModify="componentModify" @preview="preview" @collection="collection" />
+      <page-list v-if="tagList.length > 0 && tabActive === '1'" ref="tab1" :config="formConfig" :tag-list="tagList" @pageModify="pageModify" @preview="preview" @collection="collection" @add="add" />
+      <component-list v-if="tagList.length > 0 && tabActive === '2'" ref="tab2" :config="formConfig" :tag-list="tagList" @componentModify="componentModify" @preview="preview" @collection="collection" @add="add" />
       <!-- <page-factory v-if="tagList.length > 0 && tabActive === '2'" ref="pageFactory" :config="formConfig" :tag-list="tagList" @generate="generate" /> -->
     </div>
     <!-- 配置信息弹框 -->
@@ -268,6 +268,22 @@ export default {
     }
   },
   methods: {
+    overPage() {
+      this.vscode && this.vscode.postMessage({
+        command: 'inPage',
+        config: {
+        }
+      })
+    },
+    // 添加组件到页面
+    add(info) {
+      this.vscode && this.vscode.postMessage({
+        command: 'addPage',
+        config: {
+          page: JSON.stringify(info)
+        }
+      })
+    },
     // 收藏
     collection(page) {
       console.log(page.collection)
@@ -795,11 +811,12 @@ export default {
   color: #fff;
   font-size: 14px;
   margin-left: 20px;
+  font-weight: bold;
 }
 .zl-tabs {
   display: inline-block;
   vertical-align: top;
-  margin-left: 40px;
+  margin-left: 20px;
 }
 .m-preview {
   text-align: center;
@@ -817,7 +834,7 @@ export default {
 .zl-logo-mini {
   display: none;
 }
-@media screen and (max-width: 600px) {
+@media screen and (max-width: 550px) {
   .zl-header {
     padding: 0 0 0 10px;
     .zl-right {
