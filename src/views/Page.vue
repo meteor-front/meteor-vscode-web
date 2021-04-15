@@ -646,6 +646,8 @@ export default {
           if (this.config.user) {
             this.user = JSON.parse(this.config.user)
             this.getTagList()
+          } else {
+            this.visibleLogin = true
           }
           break
         case 'modifyConfigDone':
