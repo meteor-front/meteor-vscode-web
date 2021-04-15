@@ -4,10 +4,27 @@
       <img class="zl-logo" src="~@/assets/images/logo.png">
       <img class="zl-logo-mini" src="~@/assets/images/logo-mini.png">
       <div class="zl-tabs">
-        <el-tabs v-model="tabActive" @tab-click="tabSwitch">
+        <el-tabs v-model="tabActive" class="zl-pc" @tab-click="tabSwitch">
           <el-tab-pane name="1" label="页面" />
           <el-tab-pane name="2" label="组件" />
         </el-tabs>
+        <el-select v-model="tabActive" class="zl-tab-select zl-app" placeholder="请选择类型" size="mini">
+          <el-option
+            v-for="item in optionsTab"
+            :key="item.value"
+            :label="item.label"
+            :value="item.value"
+          />
+        </el-select>
+        <el-dropdown class="zl-app mr10" @command="openUploadDialog">
+          <el-button type="text">
+            上传 <i class="el-icon-arrow-down el-icon--right" />
+          </el-button>
+          <el-dropdown-menu slot="dropdown">
+            <el-dropdown-item command="1">上传页面</el-dropdown-item>
+            <el-dropdown-item command="0">上传组件</el-dropdown-item>
+          </el-dropdown-menu>
+        </el-dropdown>
       </div>
       <!-- <div class="zl-tag-list">
         <el-button v-for="tag in tagList" :key="tag.id" :type="tag.own ? 'success' : 'danger'" size="mini" round @click="selectTag(tag)">{{ tag.name }}</el-button>
@@ -74,7 +91,7 @@
           <el-select v-model="formUpload.category" placeholder="分类" @change="changeCategory">
             <el-option v-for="tag in tagList" :key="tag.name" :label="tag.name" :value="tag.name" />
           </el-select>
-          <el-select v-if="uploadType === '0'" v-model="formUpload.block" class="ml10" placeholder="请选择组件类型">
+          <el-select v-if="uploadType === '0'" v-model="formUpload.block" class="ml10" placeholder="请选择组件类型" @change="changeComponentType">
             <el-option
               v-for="item in componentLevel"
               :key="item.value"
@@ -107,7 +124,8 @@
               </el-col>
             </el-row>
             <el-form-item label="文件内容">
-              <el-input v-model="component.code" type="textarea" rows="6" />
+              <!-- <el-input v-model="component.code" type="textarea" rows="6" /> -->
+              <div :id="component.id" :ref="component.id" class="zl-monaco" />
             </el-form-item>
           </div>
           <el-form-item label="">
@@ -116,9 +134,10 @@
         </div>
         <!-- 代码块 -->
         <el-form-item v-if="formUpload.block" label="">
-          <el-tabs v-model="blockActiveTab" type="card" editable @edit="blockTabEdit">
+          <el-tabs v-model="blockActiveTab" type="card" editable @edit="blockTabEdit" @tab-click="carouselBlockTab">
             <el-tab-pane v-for="(blockTab) in blockTabList" :key="blockTab.label" :label="blockTab.label" :name="blockTab.name">
-              <el-input v-model="blockTab.code" type="textarea" rows="6" />
+              <!-- <el-input v-model="blockTab.code" type="textarea" rows="6" /> -->
+              <div :id="blockTab.name" :ref="blockTab.name" class="zl-monaco" />
             </el-tab-pane>
           </el-tabs>
         </el-form-item>
@@ -185,6 +204,8 @@ import request from '@/util/request'
 import { v4 as uuid } from 'uuid'
 import pageList from '@/components/pageList/index'
 import componentList from '@/components/componentList/index'
+// import * as monaco from 'monaco-editor/esm/vs/editor/editor.main.js'
+import * as monaco from 'monaco-editor/esm/vs/editor/editor.api.js'
 // import eruda from 'eruda'
 export default {
   components: {
@@ -244,7 +265,15 @@ export default {
       blockPositionVisible: false,
       blockPositionList: [],
       blockPosition: '',
-      uploading: false
+      uploading: false,
+      optionsTab: [{
+        label: '页面',
+        value: '1'
+      }, {
+        label: '组件',
+        value: '2'
+      }],
+      editor: {}
     }
   },
   created() {
@@ -271,6 +300,32 @@ export default {
     }
   },
   methods: {
+    carouselBlockTab() {
+      this.$nextTick(() => {
+        let has = false
+        for (let i = 0; i < this.blockTabList.length; i++) {
+          const blockTab = this.blockTabList[i]
+          if (blockTab.name === this.blockActiveTab) {
+            has = true
+            this.renderMonaco(this.blockActiveTab, blockTab.code || '', 'block')
+          }
+        }
+        if (!has) {
+          this.renderMonaco(this.blockActiveTab, '', 'block')
+        }
+      })
+    },
+    // 改变组件类型
+    changeComponentType() {
+      if (!this.formUpload.block) {
+        this.$nextTick(() => {
+          for (let i = 0; i < this.uploadComponentList.length; i++) {
+            const uploadComponent = this.uploadComponentList[i]
+            this.renderMonaco(uploadComponent.id)
+          }
+        })
+      }
+    },
     beforeCloseUpload() {
       this.visibleUpload = false
       this.uploading = false
@@ -295,13 +350,11 @@ export default {
     },
     // 收藏
     collection(page) {
-      console.log(page.collection)
       request.post('/collection', {
         componentId: page.id,
         userId: this.user.token,
         status: page.collection === '1' ? '0' : '1'
       }).then((res) => {
-        console.log(res)
         this.$message({
           message: page.collection === '1' ? '取消收藏！' : '收藏成功！',
           type: 'success'
@@ -378,8 +431,9 @@ export default {
       }
       const uploadComponentList = []
       page.code.forEach(codeItem => {
+        const id = uuid()
         uploadComponentList.push({
-          id: uuid(),
+          id: id,
           name: codeItem.name,
           type: codeItem.type,
           code: codeItem.code
@@ -387,10 +441,49 @@ export default {
       })
       this.uploadComponentList = uploadComponentList
       this.visibleUpload = true
+      for (let i = 0; i < uploadComponentList.length; i++) {
+        const uploadComponent = uploadComponentList[i]
+        this.renderMonaco(uploadComponent.id, uploadComponent.code)
+      }
+    },
+    renderMonaco(id, code, type) {
+      this.$nextTick(() => {
+        const dom = document.getElementById(id)
+        if (dom) {
+          if (this.editor[id]) {
+            // 已有
+            this.editor[id].setValue(code || '')
+          } else {
+            this.editor[id] = monaco.editor.create(document.getElementById(id), {
+              value: code || '',
+              language: 'plaintext',
+              minimap: {
+                enabled: false
+              }
+            })
+            this.editor[id].onDidChangeModelContent((e) => {
+              if (type === 'block') {
+                for (let i = 0; i < this.blockTabList.length; i++) {
+                  const blockTab = this.blockTabList[i]
+                  if (blockTab.name === id) {
+                    blockTab.code = this.editor[id].getValue()
+                  }
+                }
+              }
+            })
+          }
+        }
+      })
     },
     componentModify(page) {
       this.uploadType = '0'
       this.uploadTypeName = '组件'
+      // 销毁编辑器
+      for (const key in this.editor) {
+        const editorItem = this.editor[key]
+        editorItem.dispose()
+      }
+      this.editor = {}
       this.formUpload = {
         id: page.id,
         name: page.description.name,
@@ -407,22 +500,31 @@ export default {
       if (page.block === 0) {
         // 文件组件
         const uploadComponentList = []
+        const id = uuid()
         page.code.forEach(codeItem => {
           uploadComponentList.push({
-            id: uuid(),
+            id: id,
             name: codeItem.name,
             type: codeItem.type,
             code: codeItem.code
           })
         })
         this.uploadComponentList = uploadComponentList
+        this.visibleUpload = true
+        this.$nextTick(() => {
+          for (let i = 0; i < this.uploadComponentList.length; i++) {
+            const uploadComponent = this.uploadComponentList[i]
+            this.renderMonaco(uploadComponent.id, uploadComponent.code || '')
+          }
+        })
       } else {
         if (page.code[0]) {
           this.blockTabList = JSON.parse(page.code[0].code)
           this.blockActiveTab = this.blockTabList[0].name
         }
+        this.visibleUpload = true
+        this.renderMonaco(this.blockActiveTab, this.blockTabList[0].code || '', 'block')
       }
-      this.visibleUpload = true
     },
     tabSwitch(tab) {
     },
@@ -475,6 +577,12 @@ export default {
       }
       let code = []
       if (this.formUpload.block === 1) {
+        for (let i = 0; i < this.blockTabList.length; i++) {
+          const blockTab = this.blockTabList[i]
+          if (this.editor[blockTab.name]) {
+            blockTab.code = this.editor[blockTab.name].getValue()
+          }
+        }
         // 代码块
         code = [{
           id: uuid(),
@@ -483,6 +591,12 @@ export default {
           code: JSON.stringify(this.blockTabList)
         }]
       } else {
+        for (let i = 0; i < this.uploadComponentList.length; i++) {
+          const uploadComponent = this.uploadComponentList[i]
+          if (this.editor[uploadComponent.id]) {
+            uploadComponent.code = this.editor[uploadComponent.id].getValue()
+          }
+        }
         code = this.uploadComponentList
       }
       request.post('/component', {
@@ -550,17 +664,24 @@ export default {
           break
       }
       files.forEach(fileName => {
+        const id = uuid()
         this.uploadComponentList.push({
-          id: uuid(),
+          id: id,
           name: fileName,
           code: '',
           position: '',
           type: this.uploadType === '0' ? 'component' : 'page'
         })
+        this.renderMonaco(id)
       })
     },
     // 打开上传弹框
     openUploadDialog(uploadType) {
+      for (const key in this.editor) {
+        const editorItem = this.editor[key]
+        editorItem.dispose()
+      }
+      this.editor = {}
       this.uploading = true
       this.uploadType = uploadType
       this.uploadTypeName = uploadType === '0' ? '组件' : '页面'
@@ -576,6 +697,11 @@ export default {
       }
       this.setBlockTabList()
       this.visibleUpload = true
+      if (uploadType === '0') {
+        this.$nextTick(() => {
+          this.renderMonaco(this.blockActiveTab, '', 'block')
+        })
+      }
     },
     // 初始化代码块tab
     setBlockTabList() {
@@ -683,7 +809,6 @@ export default {
       })
       this.setCurrentTag()
       request.get(`/ownTag?tag=${tag.name}`).then((result) => {
-        console.log(result)
       }).catch((err) => {
         console.log(err)
       })
@@ -810,7 +935,7 @@ export default {
 .component-list {
   position: relative;
   margin-bottom: 20px;
-  background-color: rgba(78, 176, 124, 0.18);
+  background-color: #efefef;
   padding-top: 20px;
   padding-right: 20px;
   padding-bottom: 2px;
@@ -847,7 +972,38 @@ export default {
 .zl-logo-mini {
   display: none;
 }
+.zl-app {
+  display: none;
+}
+.mr10 {
+  margin-right: 10px;
+}
+.zl-pc {
+  display: block;
+}
 @media screen and (max-width: 550px) {
+  .zl-pc {
+    display: none;
+  }
+  .zl-app {
+    display: inline-block;
+    /deep/ {
+      .el-input--mini .el-input__inner,
+      .el-input.is-focus .el-input__inner {
+        background-color: transparent;
+        border-color: transparent;
+        color: #fff;
+        font-weight: bold;
+      }
+      .el-input .el-select__caret {
+        color: #fff;
+      }
+      .el-button {
+        color: #fff;
+        font-size: 12px;
+      }
+    }
+  }
   .zl-header {
     padding: 0 0 0 10px;
     .zl-right {
@@ -890,5 +1046,16 @@ export default {
       bottom: 0;
     }
   }
+}
+.zl-tab-select {
+  width: 70px;
+  margin: 6px 10px 0 0;
+}
+.zl-monaco {
+  height: 180px;
+  width: 100%;
+  background-color: #fff;
+  border: 1px solid #eee;
+  border-radius: 4px;
 }
 </style>

@@ -5,7 +5,9 @@ module.exports = {
   productionSourceMap: false,
   configureWebpack: {
     plugins: [
-      new MonacoWebpackPlugin()
+      new MonacoWebpackPlugin({
+        languages: ['javascript', 'css', 'html', 'json']
+      })
     ]
   },
   chainWebpack(config) {

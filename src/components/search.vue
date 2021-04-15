@@ -74,12 +74,24 @@ export default {
   width: 100px;
 }
 @media screen and (max-width: 550px) {
+  .w100 {
+    width: 80px;
+  }
   .zl-filter.el-form {
     .el-input {
       margin-left: 10px;
     }
     .zl-search-btn {
       display: none;
+    }
+    /deep/ {
+      margin-left: 10px;
+      .el-form-item__label {
+        display: none;
+      }
+      .el-input--mini .el-input__inner {
+        width: 90px;
+      }
     }
   }
 }

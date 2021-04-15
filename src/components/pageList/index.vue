@@ -5,6 +5,9 @@
       <div v-for="page in pageList" :key="page.id" class="zl-page-item">
         <div class="zl-page-head">
           <div class="zl-page-title">{{ page.description.name }}</div>
+          <div class="zl-page-mani-app">
+            <i class="el-icon-circle-plus-outline" @click="add(page)" />
+          </div>
           <div class="zl-paeg-collect">
             <i :class="page.collection === '1' ? 'el-icon-star-on' : 'el-icon-star-off'" @click="collection(page)" />
           </div>
@@ -18,9 +21,6 @@
           <el-button type="primary" circle size="mini" icon="el-icon-full-screen" @click="preview(page)" />
           <el-button type="primary" circle size="mini" icon="el-icon-edit" @click="modify(page)" />
           <el-button type="primary" circle size="mini" icon="el-icon-delete" @click="deletePage(page)" />
-        </div>
-        <div class="zl-page-mani-app">
-          <el-button type="primary" circle size="mini" icon="el-icon-plus" @click="add(page)" />
         </div>
       </div>
       <no-data v-if="pageList.length === 0 && !loading" />
@@ -208,11 +208,9 @@ export default {
     }
   }
   .zl-page-mani-app {
-    display: block;
-    position: absolute;
-    right: -8px;
-    top: -8px;
-    z-index: 9;
+    display: inline-block;
+    margin: 2px 8px 0 0;
+    color: #fff;
   }
 }
 </style>
