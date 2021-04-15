@@ -150,6 +150,7 @@
       title=""
       :visible.sync="previewVisible"
       width="600"
+      class="m-preview-dialog"
     >
       <div class="m-preview">
         <img :src="previewUrl">
@@ -854,7 +855,7 @@ export default {
       float: right;
     }
   }
-  .el-dialog__wrapper /deep/ {
+  .m-preview-dialog.el-dialog__wrapper /deep/ {
     .el-dialog {
       margin-top: 0!important;
       margin-bottom: 0!important;
