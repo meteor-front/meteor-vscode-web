@@ -51,6 +51,7 @@
     <el-dialog
       :title="(formUpload.id ? '编辑' : '添加') + uploadTypeName"
       :visible.sync="visibleUpload"
+      :before-close="beforeCloseUpload"
       width="680px"
     >
       <el-form ref="formUpload" :model="formUpload" label-width="80px" size="mini">
@@ -123,7 +124,7 @@
         </el-form-item>
       </el-form>
       <div slot="footer">
-        <el-button size="mini" @click="visibleUpload = false">取 消</el-button>
+        <el-button size="mini" @click="beforeCloseUpload">取 消</el-button>
         <el-button type="primary" size="mini" @click="addComponent">确 定</el-button>
       </div>
     </el-dialog>
@@ -242,7 +243,8 @@ export default {
       blockTagConstant: {},
       blockPositionVisible: false,
       blockPositionList: [],
-      blockPosition: ''
+      blockPosition: '',
+      uploading: false
     }
   },
   created() {
@@ -269,12 +271,18 @@ export default {
     }
   },
   methods: {
+    beforeCloseUpload() {
+      this.visibleUpload = false
+      this.uploading = false
+    },
     overPage() {
-      this.vscode && this.vscode.postMessage({
-        command: 'inPage',
-        config: {
-        }
-      })
+      if (!this.uploading) {
+        this.vscode && this.vscode.postMessage({
+          command: 'inPage',
+          config: {
+          }
+        })
+      }
     },
     // 添加组件到页面
     add(info) {
@@ -458,6 +466,7 @@ export default {
     },
     // 添加组件
     addComponent() {
+      this.uploading = false
       if (!this.formUpload.name) {
         return this.$message({
           message: `请填写${this.uploadTypeName}名称`,
@@ -552,6 +561,7 @@ export default {
     },
     // 打开上传弹框
     openUploadDialog(uploadType) {
+      this.uploading = true
       this.uploadType = uploadType
       this.uploadTypeName = uploadType === '0' ? '组件' : '页面'
       this.uploadComponentList = []
