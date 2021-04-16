@@ -432,9 +432,8 @@ export default {
       }
       const uploadComponentList = []
       page.code.forEach(codeItem => {
-        const id = uuid()
         uploadComponentList.push({
-          id: id,
+          id: uuid(),
           name: codeItem.name,
           type: codeItem.type,
           code: codeItem.code
@@ -502,10 +501,9 @@ export default {
       if (page.block === 0) {
         // 文件组件
         const uploadComponentList = []
-        const id = uuid()
         page.code.forEach(codeItem => {
           uploadComponentList.push({
-            id: id,
+            id: uuid(),
             name: codeItem.name,
             type: codeItem.type,
             code: codeItem.code
@@ -668,7 +666,7 @@ export default {
       files.forEach(fileName => {
         const id = uuid()
         this.uploadComponentList.push({
-          id: id,
+          id: uuid(),
           name: fileName,
           code: '',
           position: '',
