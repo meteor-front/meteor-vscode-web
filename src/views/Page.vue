@@ -414,6 +414,7 @@ export default {
       }
     },
     pageModify(page) {
+      this.uploading = true
       this.uploadType = '1'
       this.uploadTypeName = '页面'
       this.formUpload = {
@@ -476,6 +477,7 @@ export default {
       })
     },
     componentModify(page) {
+      this.uploading = true
       this.uploadType = '0'
       this.uploadTypeName = '组件'
       // 销毁编辑器

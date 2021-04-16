@@ -5,11 +5,10 @@
       <div v-for="page in pageList" :key="page.id" class="zl-page-item">
         <div class="zl-page-head">
           <div class="zl-page-title">{{ page.description.name }}</div>
-          <div class="zl-page-mani-app">
-            <i class="el-icon-circle-plus-outline" @click="add(page)" />
-          </div>
-          <div class="zl-paeg-collect">
+          <div class="zl-page-collect">
             <i :class="page.collection === '1' ? 'el-icon-star-on' : 'el-icon-star-off'" @click="collection(page)" />
+            <i class="el-icon-edit" @click="modify(page)" />
+            <i class="el-icon-circle-plus-outline" @click="add(page)" />
           </div>
         </div>
         <div class="zl-page-container">
@@ -143,7 +142,7 @@ export default {
   display: flex;
   font-size: 14px;
   font-weight: bold;
-  padding: 5px 10px;
+  padding: 5px;
   background-color: #4eb07b;
   .zl-page-title {
     flex: 1;
@@ -152,6 +151,8 @@ export default {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    font-size: 12px;
+    line-height: 18px;
   }
   .zl-page-type {
     color: #fff;
@@ -160,14 +161,14 @@ export default {
 .zl-page-container {
   position: relative;
   width: 175px;
-  height: 120px;
+  height: 80px;
   img {
     position: absolute;
     left: 50%;
     top: 50%;
     transform: translate(-50%, -50%);
     max-width: 175px;
-    max-height: 120px;
+    max-height: 80px;
   }
 }
 .zl-page-mani {
@@ -180,10 +181,13 @@ export default {
   padding: 10px;
   text-align: center;
 }
-.zl-paeg-collect {
+.zl-page-collect {
   font-size: 16px;
   color: #fff;
   cursor: pointer;
+  i + i {
+    margin-left: 5px;
+  }
 }
 .zl-page-mani-app {
   display: none;
@@ -209,7 +213,7 @@ export default {
   }
   .zl-page-mani-app {
     display: inline-block;
-    margin: 2px 8px 0 0;
+    margin: 2px 4px 0 0;
     color: #fff;
   }
 }
