@@ -172,7 +172,7 @@ export default {
     applyResult(agree, page) {
       let message = '确定拒绝?'
       if (agree) {
-        page.userId = '999999999'
+        page.applier = '999999999'
         message = '确定通过?'
       }
       page.apply = ''
