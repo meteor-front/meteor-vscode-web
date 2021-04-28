@@ -15,7 +15,10 @@ export default new Vuex.Store({
       data: {},
       event: {},
       style: new Set()
-    }
+    },
+    mode: '0', // 预览模式 0: 图形 1：精简
+    token: '',
+    processor: ''
   },
   mutations: {
     setWidgetSelected(state, value) {
@@ -43,6 +46,15 @@ export default new Vuex.Store({
       if (!state.global.style.has(value)) {
         state.global.style.add(value)
       }
+    },
+    setMode(state, value) {
+      state.mode = value
+    },
+    setToken(state, value) {
+      state.token = value
+    },
+    setProcessor(state, value) {
+      state.processor = value
     }
   },
   actions: {

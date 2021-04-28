@@ -7,6 +7,8 @@
         <el-tabs v-model="tabActive" class="zl-pc" @tab-click="tabSwitch">
           <el-tab-pane name="1" label="页面" />
           <el-tab-pane name="2" label="组件" />
+          <el-tab-pane v-if="$store.state.processor === '1'" name="3" label="申请" />
+          <el-tab-pane v-if="$store.state.processor === '1'" name="4" label="公共" />
         </el-tabs>
         <el-select v-model="tabActive" class="zl-tab-select zl-app" placeholder="请选择类型" size="mini">
           <el-option
@@ -41,8 +43,10 @@
       </div>
     </div>
     <div class="zl-container">
-      <page-list v-if="tagList.length > 0 && tabActive === '1'" ref="tab1" :config="formConfig" :tag-list="tagList" @pageModify="pageModify" @preview="preview" @collection="collection" @add="add" />
-      <component-list v-if="tagList.length > 0 && tabActive === '2'" ref="tab2" :config="formConfig" :tag-list="tagList" @componentModify="componentModify" @preview="preview" @collection="collection" @add="add" />
+      <page-list v-if="tagList.length > 0 && tabActive === '1'" ref="tab1" :config="formConfig" :tag-list="tagList" @pageModify="pageModify" @preview="preview" @collection="collection" @add="add" @applyCommon="applyCommon" />
+      <component-list v-if="tagList.length > 0 && tabActive === '2'" ref="tab2" :config="formConfig" :tag-list="tagList" @componentModify="componentModify" @preview="preview" @collection="collection" @add="add" @applyCommon="applyCommon" />
+      <apply-list v-if="tagList.length > 0 && tabActive === '3'" ref="tab3" :config="formConfig" :tag-list="tagList" @pageModify="pageModify" @componentModify="componentModify" @preview="preview" @applyCommon="applyCommon" />
+      <common-list v-if="tagList.length > 0 && tabActive === '4'" ref="tab4" :config="formConfig" :tag-list="tagList" @pageModify="pageModify" @componentModify="componentModify" @preview="preview" @applyCommon="applyCommon" />
       <!-- <page-factory v-if="tagList.length > 0 && tabActive === '2'" ref="pageFactory" :config="formConfig" :tag-list="tagList" @generate="generate" /> -->
     </div>
     <!-- 配置信息弹框 -->
@@ -207,10 +211,14 @@ import componentList from '@/components/componentList/index'
 // import * as monaco from 'monaco-editor/esm/vs/editor/editor.main.js'
 import * as monaco from 'monaco-editor/esm/vs/editor/editor.api.js'
 // import eruda from 'eruda'
+import applyList from './../components/applyList/applyList.vue'
+import commonList from './../components/commonList/commonList.vue'
 export default {
   components: {
     pageList,
-    componentList
+    componentList,
+    applyList,
+    commonList
   },
   data() {
     return {
@@ -300,6 +308,24 @@ export default {
     }
   },
   methods: {
+    // 申请成为公共
+    applyCommon(page) {
+      request.post('/applyCommon', page).then((res) => {
+        if (res.code === 0) {
+          this.$message({
+            message: '申请成功！',
+            type: 'success'
+          })
+        } else {
+          this.$message({
+            message: res.message,
+            type: 'warning'
+          })
+        }
+      }).catch((err) => {
+        console.error(err)
+      })
+    },
     carouselBlockTab() {
       this.$nextTick(() => {
         let has = false
@@ -407,10 +433,10 @@ export default {
       if (this.previewUrl) {
         this.previewVisible = true
       } else {
-        this.$message({
-          message: '暂无预览效果图，请上传',
-          type: 'warning'
-        })
+        // this.$message({
+        //   message: '暂无预览效果图，请上传',
+        //   type: 'warning'
+        // })
       }
     },
     pageModify(page) {
@@ -530,7 +556,7 @@ export default {
     },
     mock() {
       this.user = { 'token': 20, 'name': 'jiaolong', 'avatar': null, 'password': '123' }
-      this.getTagList()
+      this.getUserInfo()
     },
     // 上传成功
     uploadSuccess(res, file, fileList) {
@@ -552,7 +578,7 @@ export default {
               })
               this.visibleLogin = false
               this.user = res.data
-              this.getTagList()
+              this.getUserInfo()
             }
           }).catch((err) => {
             console.log(err)
@@ -782,7 +808,7 @@ export default {
           this.formConfig.rootPathPage = this.config.rootPathPage
           if (this.config.user) {
             this.user = JSON.parse(this.config.user)
-            this.getTagList()
+            this.getUserInfo()
           } else {
             this.visibleLogin = true
           }
@@ -811,6 +837,18 @@ export default {
       request.get(`/ownTag?tag=${tag.name}`).then((result) => {
       }).catch((err) => {
         console.log(err)
+      })
+    },
+    // 获取用户信息
+    getUserInfo() {
+      request.token = this.user.token
+      request.get('/user').then((res) => {
+        if (res.code === 0) {
+          this.$store.commit('setProcessor', res.user.processor)
+          this.getTagList()
+        }
+      }).catch((err) => {
+        console.error(err)
       })
     },
     // 获取标签列表
@@ -849,6 +887,7 @@ export default {
         this.tagList = frameworkList
         this.pageTypeList = pageTypeList
         this.blockTagConstant = blockTagConstant
+        this.$store.commit('setToken', this.user.token + '')
         this.setCurrentTag()
       }).catch((error) => {
         console.log(error)

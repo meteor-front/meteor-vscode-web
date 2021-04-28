@@ -1,5 +1,5 @@
 <template>
-  <div class="zl-page">
+  <div class="zl-page" :class="$store.state.mode === '1' ? 'simple' : ''">
     <search ref="search" :tag-list="tagList" tab="1" @fetchList="fetchList" />
     <div v-loading="loading" class="zl-page-list">
       <div v-for="page in pageList" :key="page.id" class="zl-page-item">
@@ -7,19 +7,21 @@
           <div class="zl-page-title">{{ page.description.name }}</div>
           <div class="zl-page-collect">
             <i :class="page.collection === '1' ? 'el-icon-star-on' : 'el-icon-star-off'" @click="collection(page)" />
-            <i class="el-icon-edit" @click="modify(page)" />
+            <i v-if="$store.state.token === page.userId" class="el-icon-edit" @click="modify(page)" />
             <i class="el-icon-circle-plus-outline" @click="add(page)" />
           </div>
         </div>
         <div class="zl-page-container">
-          <img :src="page.description.avatar || 'https://www.80fight.cn/zlst/default.png'" alt="">
-          <div class="zl-app" @click="preview(page)" />
-        </div>
-        <div class="zl-page-mani">
-          <el-button type="primary" circle size="mini" icon="el-icon-plus" @click="add(page)" />
-          <el-button type="primary" circle size="mini" icon="el-icon-full-screen" @click="preview(page)" />
-          <el-button type="primary" circle size="mini" icon="el-icon-edit" @click="modify(page)" />
-          <el-button type="primary" circle size="mini" icon="el-icon-delete" @click="deletePage(page)" />
+          <div class="zl-badge">
+            <i v-if="page.userId === '999999999'" class="el-icon-s-flag" />
+            <i class="el-icon-document" />
+          </div>
+          <img :src="page.description.avatar || 'https://www.80fight.cn/zlst/default.png'" alt="" @click="preview(page)">
+          <div v-if="$store.state.token === page.userId" class="zl-page-mani">
+            <el-tooltip effect="dark" content="公共" placement="top">
+              <i class="el-icon-upload" @click="applyCommon(page)" />
+            </el-tooltip>
+          </div>
         </div>
       </div>
       <no-data v-if="pageList.length === 0 && !loading" />
@@ -99,6 +101,9 @@ export default {
         this.loading = false
         console.error(err)
       })
+    },
+    applyCommon(page) {
+      this.$emit('applyCommon', page)
     }
   }
 }
@@ -169,6 +174,7 @@ export default {
     transform: translate(-50%, -50%);
     max-width: 175px;
     max-height: 80px;
+    cursor: pointer;
   }
 }
 .zl-page-mani {
@@ -176,6 +182,11 @@ export default {
   position: absolute;
   right: 8px;
   top: 8px;
+  i {
+    font-size: 18px;
+    cursor: pointer;
+    color: #409EFF;
+  }
 }
 .zl-pagination {
   padding: 10px;
@@ -215,6 +226,28 @@ export default {
     display: inline-block;
     margin: 2px 4px 0 0;
     color: #fff;
+  }
+}
+.zl-page.simple {
+  .zl-page-item {
+    padding-bottom: 0;
+  }
+  .zl-page-head {
+    position: relative;
+    width: 175px;
+  }
+  .zl-page-container {
+    display: none;
+  }
+}
+.zl-badge {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  color: #f8934a;
+  z-index: 99;
+  i {
+    font-size: 14px;
   }
 }
 </style>

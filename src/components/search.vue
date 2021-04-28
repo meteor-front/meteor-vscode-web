@@ -11,6 +11,12 @@
     <el-form-item label="" class="zl-search-btn">
       <el-button type="primary" icon="el-icon-search" @click="fetchList">查询</el-button>
     </el-form-item>
+    <div class="zl-mode">
+      <el-button v-if="$store.state.processor && tab === '3'" type="primary" size="mini" @click="showHandlerPop">处理人</el-button>
+      <el-button-group class="ml10">
+        <el-button v-for="mode in modeList" :key="mode.id" size="mini" :type="active === mode.key ? 'primary' : ''" @click="toggle(mode.key)">{{ mode.name }}</el-button>
+      </el-button-group>
+    </div>
   </el-form>
 </template>
 <script type="text/javascript">
@@ -33,14 +39,23 @@ export default {
         tag: '',
         searchValue: '',
         badge: ''
-      }
+      },
+      active: 0,
+      modeList: [{
+        key: '0',
+        name: '图形'
+      }, {
+        key: '1',
+        name: '精简'
+      }]
     }
   },
   computed: {
     placeholderSearch() {
       const tabNames = {
         '1': '页面',
-        '2': '组件'
+        '2': '组件',
+        '3': '页面/组件'
       }
       return `请输入${tabNames[this.tab]}名称，enter查询`
     }
@@ -51,10 +66,18 @@ export default {
         this.form.tag = tag.name
       }
     })
+    this.active = this.$store.state.mode
   },
   methods: {
+    showHandlerPop() {
+      this.$emit('showHandlerPop')
+    },
     fetchList() {
       this.$emit('fetchList', this.form)
+    },
+    toggle(key) {
+      this.active = key
+      this.$store.commit('setMode', key)
     }
   }
 }
@@ -72,6 +95,9 @@ export default {
 }
 .w100 {
   width: 100px;
+}
+.ml10 {
+  margin-left: 10px;
 }
 @media screen and (max-width: 550px) {
   .w100 {
@@ -94,5 +120,13 @@ export default {
       }
     }
   }
+}
+.zl-mode {
+  float: right;
+  padding-right: 20px;
+}
+.el-dropdown-menu__item.active {
+  background-color: #ecf5ff;
+  color: #66b1ff;
 }
 </style>
