@@ -845,6 +845,15 @@ export default {
       request.get('/user').then((res) => {
         if (res.code === 0) {
           this.$store.commit('setProcessor', res.user.processor)
+          if (res.user.processor === '1') {
+            this.optionsTab.push({
+              label: '申请',
+              value: '3'
+            }, {
+              label: '公用',
+              value: '4'
+            })
+          }
           this.getTagList()
         }
       }).catch((err) => {
