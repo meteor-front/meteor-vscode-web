@@ -100,7 +100,6 @@
         <el-form-item v-if="uploadType === '0'" label="">
           <el-tabs v-model="blockActiveTab" type="card" editable @edit="blockTabEdit" @tab-click="carouselBlockTab">
             <el-tab-pane v-for="(blockTab) in blockTabList" :key="blockTab.label" :label="blockTab.label" :name="blockTab.name">
-              <!-- <el-input v-model="blockTab.code" type="textarea" rows="6" /> -->
               <div :id="blockTab.name" :ref="blockTab.name" class="zl-monaco" />
             </el-tab-pane>
           </el-tabs>
@@ -129,7 +128,6 @@
               </el-col>
             </el-row>
             <el-form-item label="文件内容">
-              <!-- <el-input v-model="component.code" type="textarea" rows="6" /> -->
               <div :id="component.id" :ref="component.id" class="zl-monaco" />
             </el-form-item>
           </div>
@@ -137,6 +135,35 @@
             <el-button type="primary" size="mini" icon="el-icon-plus" @click="addComponentItem">添加文件</el-button>
           </el-form-item>
           <el-form-item label="">
+            <el-table
+              v-if="funcList.length > 0"
+              :data="funcList"
+              style="width: 100%"
+              size="mini"
+            >
+              <el-table-column
+                type="index"
+                label="索引"
+              />
+              <el-table-column
+                header-align="center"
+                align="center"
+                prop="name"
+                label="名称"
+              />
+              <el-table-column
+                header-align="center"
+                align="center"
+                label="操作"
+              >
+                <template slot-scope="scope">
+                  <el-button type="text" size="mini" @click="funcEdit(scope.row)">编辑</el-button>
+                  <el-button type="text" size="mini" @click="funcDel(scope.row)">删除</el-button>
+                </template>
+              </el-table-column>
+            </el-table>
+          </el-form-item>
+          <el-form-item v-if="uploadType === '0'" label="">
             <el-button type="primary" size="mini" icon="el-icon-plus" @click="addFunctionItem">添加功能块</el-button>
           </el-form-item>
         </div>
@@ -194,6 +221,49 @@
         <el-button type="primary" @click="blockPositionConf">确 定</el-button>
       </div>
     </el-dialog>
+    <!-- 功能块弹窗 -->
+    <el-dialog
+      title="功能块"
+      :visible.sync="funcVisible"
+      width="600px"
+    >
+      <el-form ref="funcForm" :model="funcForm" label-width="80px" size="mini">
+        <el-form-item label="功能名称">
+          <el-input v-model="funcForm.name" placeholder="通过 [slot-功能名称] 在组件内引入" />
+        </el-form-item>
+        <!-- 代码块 -->
+        <el-form-item label="">
+          <el-tabs v-model="funcBlockActiveTab" type="card" editable size="mini" @edit="funcBlockTabEdit" @tab-click="funcCarouselBlockTab">
+            <el-tab-pane v-for="(blockTab) in funcBlockTabList" :key="blockTab.label" :label="blockTab.label" :name="blockTab.name">
+              <div :id="blockTab.name + 'Func'" :ref="blockTab.name + 'Func'" class="zl-monaco" />
+            </el-tab-pane>
+          </el-tabs>
+        </el-form-item>
+        <!-- 文件 -->
+        <div class="component-list-box">
+          <div v-for="component in funcUploadComponentList" :key="component.id" class="component-list">
+            <el-button type="danger" circle icon="el-icon-delete" size="mini" class="delete" @click="funcDeleteComponentItem(component)" />
+            <el-row :gutter="10">
+              <el-col :span="8">
+                <el-form-item label="文件名">
+                  <el-input v-model="component.name" placeholder="index.vue" />
+                </el-form-item>
+              </el-col>
+            </el-row>
+            <el-form-item label="文件内容">
+              <div :id="component.id" :ref="component.id" class="zl-monaco" />
+            </el-form-item>
+          </div>
+          <el-form-item label="">
+            <el-button type="primary" size="mini" icon="el-icon-plus" @click="funcAddComponentItem">添加文件</el-button>
+          </el-form-item>
+        </div>
+      </el-form>
+      <div slot="footer">
+        <el-button @click="funcVisible = false">取 消</el-button>
+        <el-button type="primary" @click="addFunc">确 定</el-button>
+      </div>
+    </el-dialog>
   </div>
 </template>
 
@@ -208,6 +278,7 @@ import * as monaco from 'monaco-editor/esm/vs/editor/editor.api.js'
 // import eruda from 'eruda'
 import applyList from './../components/applyList/applyList.vue'
 import commonList from './../components/commonList/commonList.vue'
+import { cloneDeep } from 'lodash'
 export default {
   components: {
     pageList,
@@ -271,11 +342,17 @@ export default {
       uploading: false,
       optionsTab: [],
       editor: {},
-      funcList: []
+      funcList: [],
+      funcVisible: false,
+      funcForm: {},
+      funcBlockActiveTab: '',
+      funcBlockTabList: [],
+      positionType: '',
+      funcUploadComponentList: []
     }
   },
   created() {
-    this.tabActive = this.$route && this.$route.query && this.$route.query.tab || '1'
+    this.tabActive = this.$route && this.$route.query && this.$route.query.tab || '2'
     this.baseUrl = utils.constant.uploadUrl
     if (process.env.NODE_ENV === 'development') {
       this.mock()
@@ -298,6 +375,131 @@ export default {
     }
   },
   methods: {
+    // 功能块删除
+    funcDel(func) {
+      this.$confirm('确定删除该功能块?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        this.funcList = this.funcList.filter((item) => {
+          return item.id !== func.id
+        })
+      }).catch(() => {
+      })
+    },
+    // 功能块编辑
+    funcEdit(func) {
+      this.funcForm = func
+      this.funcBlockTabList = func.funcBlockTabList
+      this.funcUploadComponentList = func.funcUploadComponentList
+      this.funcBlockActiveTab = this.funcBlockTabList[0].label
+      this.funcVisible = true
+      this.$nextTick(() => {
+        this.renderMonaco(this.funcBlockActiveTab + 'Func', this.funcBlockTabList[0].code, 'func')
+        for (let i = 0; i < this.funcUploadComponentList.length; i++) {
+          const uploadComponent = this.funcUploadComponentList[i]
+          this.renderMonaco(uploadComponent.id, uploadComponent.code, 'funcFile')
+        }
+      })
+    },
+    // 添加功能项
+    addFunc() {
+      for (let i = 0; i < this.funcUploadComponentList.length; i++) {
+        const uploadComponent = this.funcUploadComponentList[i]
+        if (this.editor[uploadComponent.id]) {
+          uploadComponent.code = this.editor[uploadComponent.id].getValue()
+        }
+      }
+      this.funcForm.funcBlockTabList = this.funcBlockTabList
+      this.funcForm.funcUploadComponentList = this.funcUploadComponentList
+      const funcList = []
+      let has = false
+      for (let i = 0; i < this.funcList.length; i++) {
+        const func = this.funcList[i]
+        if (func.id === this.funcForm.id) {
+          funcList.push(this.funcForm)
+          has = true
+        } else {
+          funcList.push(func)
+        }
+      }
+      if (!has) {
+        funcList.push(this.funcForm)
+      }
+      this.funcList = funcList
+      this.funcVisible = false
+    },
+    funcAddComponentItem() {
+      const files = []
+      const len = this.funcUploadComponentList
+      const index = len > 0 ? len : ''
+      switch (this.formUpload.category) {
+        case 'vue':
+          files.push('index' + index + '.vue')
+          break
+        case 'react':
+          files.push('index' + index + '.js')
+          break
+        case 'miniapp':
+          if (len > 0) {
+            files.push('index' + index + '.js')
+          } else {
+            files.push('index.js')
+            files.push('index.json')
+            files.push('index.wxml')
+            files.push('index.wxss')
+          }
+          break
+
+        default:
+          break
+      }
+      files.forEach(fileName => {
+        const id = uuid()
+        this.funcUploadComponentList.push({
+          id,
+          name: fileName,
+          code: '',
+          position: '',
+          type: this.uploadType === '0' ? 'funcFile' : 'page'
+        })
+        this.renderMonaco(id)
+      })
+    },
+    funcDeleteComponentItem(component) {
+      this.funcUploadComponentList = this.funcUploadComponentList.filter((item) => {
+        return item.id !== component.id
+      })
+    },
+    // 功能块切换tab
+    funcCarouselBlockTab() {
+      this.$nextTick(() => {
+        let has = false
+        for (let i = 0; i < this.funcBlockTabList.length; i++) {
+          const blockTab = this.funcBlockTabList[i]
+          if (blockTab.name === this.funcBlockActiveTab) {
+            has = true
+            this.renderMonaco(this.funcBlockActiveTab + 'Func', blockTab.code || '', 'func')
+          }
+        }
+        if (!has) {
+          this.renderMonaco(this.funcBlockActiveTab + 'Func', '', 'func')
+        }
+      })
+    },
+    // 功能块切换
+    funcBlockTabEdit(name, action) {
+      if (action === 'add') {
+        this.blockPositionList = this.blockTagConstant[this.formUpload.category]
+        this.positionType = 'func'
+        this.blockPositionVisible = true
+      } else if (action === 'remove') {
+        this.funcBlockTabList = this.funcBlockTabList.filter((item) => {
+          return item.name !== name
+        })
+      }
+    },
     // 申请成为公共
     applyCommon(page) {
       request.post('/applyCommon', page).then((res) => {
@@ -382,13 +584,19 @@ export default {
     },
     changeCategory() {
       if (this.formUpload.block === 1) {
-        this.setBlockTabList()
+        this.setBlockTabList('component')
       }
     },
     blockPositionConf() {
       // 判断是否已添加
+      let blockList = []
+      if (this.positionType === 'func') {
+        blockList = this.funcBlockTabList
+      } else if (this.positionType === 'component') {
+        blockList = this.blockTabList
+      }
       let has = false
-      this.blockTabList.forEach(blockTab => {
+      blockList.forEach(blockTab => {
         if (blockTab.name === this.blockPosition) {
           has = true
         }
@@ -399,11 +607,16 @@ export default {
           type: 'warning'
         })
       } else {
-        this.blockTabList = this.blockTabList.concat({
+        blockList = blockList.concat({
           label: this.blockPosition,
           name: this.blockPosition,
           code: ''
         })
+        if (this.positionType === 'func') {
+          this.funcBlockTabList = blockList
+        } else if (this.positionType === 'component') {
+          this.blockTabList = blockList
+        }
         this.blockPositionVisible = false
       }
     },
@@ -411,6 +624,7 @@ export default {
     blockTabEdit(name, action) {
       if (action === 'add') {
         this.blockPositionList = this.blockTagConstant[this.formUpload.category]
+        this.positionType = 'component'
         this.blockPositionVisible = true
       } else if (action === 'remove') {
         this.blockTabList = this.blockTabList.filter((item) => {
@@ -478,13 +692,26 @@ export default {
               }
             })
             this.editor[id].onDidChangeModelContent((e) => {
-              if (type === 'block') {
-                for (let i = 0; i < this.blockTabList.length; i++) {
-                  const blockTab = this.blockTabList[i]
-                  if (blockTab.name === id) {
-                    blockTab.code = this.editor[id].getValue()
+              switch (type) {
+                case 'block':
+                  for (let i = 0; i < this.blockTabList.length; i++) {
+                    const blockTab = this.blockTabList[i]
+                    if (blockTab.name === id) {
+                      blockTab.code = this.editor[id].getValue()
+                    }
                   }
-                }
+                  break
+                case 'func':
+                  for (let i = 0; i < this.funcBlockTabList.length; i++) {
+                    const blockTab = this.funcBlockTabList[i]
+                    if (blockTab.name + 'Func' === id) {
+                      blockTab.code = this.editor[id].getValue()
+                    }
+                  }
+                  break
+
+                default:
+                  break
               }
             })
           }
@@ -514,33 +741,62 @@ export default {
           url: page.description.avatar
         }]
       }
-      if (page.block === 0) {
-        // 文件组件
-        const uploadComponentList = []
-        page.code.forEach(codeItem => {
+      const funcNames = []
+      const funcList = []
+      const uploadComponentList = []
+      for (let i = 0; i < page.code.length; i++) {
+        const codeItem = page.code[i]
+        if (codeItem.position) {
+          // 功能块
+          let index = funcNames.indexOf(codeItem.position)
+          if (index === -1) {
+            funcNames.push(codeItem.position)
+            funcList.push({
+              id: uuid(),
+              name: codeItem.position,
+              funcBlockTabList: [],
+              funcUploadComponentList: []
+            })
+            index = funcList.length - 1
+          }
+          switch (codeItem.type) {
+            case 'func':
+              codeItem.code && (funcList[index].funcBlockTabList = JSON.parse(codeItem.code))
+              break
+            case 'funcFile':
+              funcList[index].funcUploadComponentList.push({
+                id: uuid(),
+                ...codeItem
+              })
+              break
+            default:
+              break
+          }
+        } else if (codeItem.name) {
+          // 文件
           uploadComponentList.push({
             id: uuid(),
             name: codeItem.name,
             type: codeItem.type,
             code: codeItem.code
           })
-        })
-        this.uploadComponentList = uploadComponentList
-        this.visibleUpload = true
-        this.$nextTick(() => {
-          for (let i = 0; i < this.uploadComponentList.length; i++) {
-            const uploadComponent = this.uploadComponentList[i]
-            this.renderMonaco(uploadComponent.id, uploadComponent.code || '')
-          }
-        })
-      } else {
-        if (page.code[0]) {
-          this.blockTabList = JSON.parse(page.code[0].code)
+        } else {
+          // 代码块
+          this.blockTabList = JSON.parse(codeItem.code)
           this.blockActiveTab = this.blockTabList[0].name
         }
-        this.visibleUpload = true
-        this.renderMonaco(this.blockActiveTab, this.blockTabList[0].code || '', 'block')
       }
+      this.visibleUpload = true
+      this.renderMonaco(this.blockActiveTab, this.blockTabList[0].code || '', 'block')
+      this.uploadComponentList = uploadComponentList
+      this.funcList = funcList
+      this.visibleUpload = true
+      this.$nextTick(() => {
+        for (let i = 0; i < this.uploadComponentList.length; i++) {
+          const uploadComponent = this.uploadComponentList[i]
+          this.renderMonaco(uploadComponent.id, uploadComponent.code || '')
+        }
+      })
     },
     tabSwitch(tab) {
     },
@@ -592,28 +848,54 @@ export default {
         })
       }
       let code = []
-      if (this.formUpload.block === 1) {
-        for (let i = 0; i < this.blockTabList.length; i++) {
-          const blockTab = this.blockTabList[i]
-          if (this.editor[blockTab.name]) {
-            blockTab.code = this.editor[blockTab.name].getValue()
-          }
+      // 代码块
+      let hasCont = false
+      for (let i = 0; i < this.blockTabList.length; i++) {
+        const blockTab = this.blockTabList[i]
+        if (blockTab.code) {
+          hasCont = true
         }
-        // 代码块
-        code = [{
+      }
+      if (hasCont) {
+        code.push({
           id: uuid(),
           name: '',
           type: 'component',
           code: JSON.stringify(this.blockTabList)
-        }]
-      } else {
-        for (let i = 0; i < this.uploadComponentList.length; i++) {
-          const uploadComponent = this.uploadComponentList[i]
-          if (this.editor[uploadComponent.id]) {
-            uploadComponent.code = this.editor[uploadComponent.id].getValue()
+        })
+      }
+      // 文件
+      for (let i = 0; i < this.uploadComponentList.length; i++) {
+        const uploadComponent = this.uploadComponentList[i]
+        if (this.editor[uploadComponent.id]) {
+          uploadComponent.code = this.editor[uploadComponent.id].getValue()
+        }
+      }
+      code = code.concat(cloneDeep(this.uploadComponentList))
+      // 功能块
+      for (let i = 0; i < this.funcList.length; i++) {
+        const func = this.funcList[i]
+        let hasFuncCont = false
+        for (let i = 0; i < func.funcBlockTabList.length; i++) {
+          const blockTab = func.funcBlockTabList[i]
+          if (blockTab.code) {
+            hasFuncCont = true
           }
         }
-        code = this.uploadComponentList
+        if (hasFuncCont) {
+          code.push({
+            id: uuid(),
+            name: '',
+            type: 'func',
+            code: JSON.stringify(func.funcBlockTabList),
+            position: func.name
+          })
+        }
+        const funcUploadComponentList = cloneDeep(func.funcUploadComponentList)
+        funcUploadComponentList.forEach(componentItem => {
+          componentItem.position = func.name
+          code.push(componentItem)
+        })
       }
       request.post('/component', {
         id: this.formUpload.id,
@@ -655,11 +937,17 @@ export default {
     },
     // 添加功能项
     addFunctionItem() {
-      this.funcList.push({
+      const func = {
         id: uuid(),
         name: '',
-        codes: '',
-        files: []
+        funcBlockTabList: [],
+        funcUploadComponentList: []
+      }
+      this.funcForm = func
+      this.setBlockTabList('func')
+      this.funcVisible = true
+      this.$nextTick(() => {
+        this.renderMonaco(this.funcBlockActiveTab + 'Func', '', 'func')
       })
     },
     // 添加文件项
@@ -722,7 +1010,8 @@ export default {
         avatar: '',
         block: uploadType === '0' ? 1 : 0
       }
-      this.setBlockTabList()
+      this.setBlockTabList('component')
+      this.funcList = []
       this.visibleUpload = true
       if (uploadType === '0') {
         this.$nextTick(() => {
@@ -731,10 +1020,12 @@ export default {
       }
     },
     // 初始化代码块tab
-    setBlockTabList() {
+    setBlockTabList(type) {
+      let tabList = []
+      let active = ''
       switch (this.formUpload.category) {
         case 'vue':
-          this.blockTabList = [{
+          tabList = [{
             label: 'template',
             name: 'template',
             code: ''
@@ -751,10 +1042,10 @@ export default {
             name: 'style',
             code: ''
           }]
-          this.blockActiveTab = 'template'
+          active = 'template'
           break
         case 'miniapp':
-          this.blockTabList = [{
+          tabList = [{
             label: 'js',
             name: 'js',
             code: ''
@@ -771,15 +1062,29 @@ export default {
             name: 'json',
             code: ''
           }]
-          this.blockActiveTab = 'js'
+          active = 'js'
           break
         case 'react':
-          this.blockTabList = [{
+          tabList = [{
             label: 'js',
             name: 'js',
             code: ''
           }]
-          this.blockActiveTab = 'js'
+          active = 'js'
+          break
+
+        default:
+          break
+      }
+
+      switch (type) {
+        case 'component':
+          this.blockTabList = tabList
+          this.blockActiveTab = active
+          break
+        case 'func':
+          this.funcBlockTabList = tabList
+          this.funcBlockActiveTab = active
           break
 
         default:
