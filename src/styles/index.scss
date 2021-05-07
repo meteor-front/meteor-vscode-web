@@ -423,3 +423,10 @@ body {
 .c-red {
   color: #f56c6c;
 }
+.zl-page-item:hover {
+  border-color: #4eb07b;
+}
+.zl-page-collect i:hover {
+  transition: all 0.3s ease;
+  color: #1a7304;
+}

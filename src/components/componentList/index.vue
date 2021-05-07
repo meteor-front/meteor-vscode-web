@@ -62,11 +62,7 @@ export default {
   },
   methods: {
     add(page) {
-      this.$emit('add', {
-        name: page.description.name,
-        type: '0',
-        description: `(${page.category})`
-      })
+      this.$emit('add', page)
     },
     collection(page) {
       this.$emit('collection', page)
@@ -264,6 +260,17 @@ export default {
   z-index: 99;
   i {
     font-size: 14px;
+  }
+}
+.zl-public {
+  position: absolute;
+  top: 0;
+  left: 0;
+  &::before {
+    content: "";
+    position: absolute;
+    border-top: 10px solid red;
+    border-right: 10px solid transparent;
   }
 }
 </style>

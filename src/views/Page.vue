@@ -95,17 +95,18 @@
           <el-select v-model="formUpload.category" placeholder="分类" @change="changeCategory">
             <el-option v-for="tag in tagList" :key="tag.name" :label="tag.name" :value="tag.name" />
           </el-select>
-          <el-select v-if="uploadType === '0'" v-model="formUpload.block" class="ml10" placeholder="请选择组件类型" @change="changeComponentType">
-            <el-option
-              v-for="item in componentLevel"
-              :key="item.value"
-              :label="item.label"
-              :value="item.value"
-            />
-          </el-select>
+        </el-form-item>
+        <!-- 代码块 -->
+        <el-form-item v-if="uploadType === '0'" label="">
+          <el-tabs v-model="blockActiveTab" type="card" editable @edit="blockTabEdit" @tab-click="carouselBlockTab">
+            <el-tab-pane v-for="(blockTab) in blockTabList" :key="blockTab.label" :label="blockTab.label" :name="blockTab.name">
+              <!-- <el-input v-model="blockTab.code" type="textarea" rows="6" /> -->
+              <div :id="blockTab.name" :ref="blockTab.name" class="zl-monaco" />
+            </el-tab-pane>
+          </el-tabs>
         </el-form-item>
         <!-- 文件级别 -->
-        <div v-if="!formUpload.block" class="component-list-box">
+        <div class="component-list-box">
           <div v-for="component in uploadComponentList" :key="component.id" class="component-list">
             <el-button type="danger" circle icon="el-icon-delete" size="mini" class="delete" @click="deleteComponentItem(component)" />
             <el-row :gutter="10">
@@ -133,18 +134,12 @@
             </el-form-item>
           </div>
           <el-form-item label="">
-            <el-button type="primary" size="mini" icon="el-icon-plus" @click="addComponentItem">添加文件项</el-button>
+            <el-button type="primary" size="mini" icon="el-icon-plus" @click="addComponentItem">添加文件</el-button>
+          </el-form-item>
+          <el-form-item label="">
+            <el-button type="primary" size="mini" icon="el-icon-plus" @click="addFunctionItem">添加功能块</el-button>
           </el-form-item>
         </div>
-        <!-- 代码块 -->
-        <el-form-item v-if="formUpload.block" label="">
-          <el-tabs v-model="blockActiveTab" type="card" editable @edit="blockTabEdit" @tab-click="carouselBlockTab">
-            <el-tab-pane v-for="(blockTab) in blockTabList" :key="blockTab.label" :label="blockTab.label" :name="blockTab.name">
-              <!-- <el-input v-model="blockTab.code" type="textarea" rows="6" /> -->
-              <div :id="blockTab.name" :ref="blockTab.name" class="zl-monaco" />
-            </el-tab-pane>
-          </el-tabs>
-        </el-form-item>
       </el-form>
       <div slot="footer">
         <el-button size="mini" @click="beforeCloseUpload">取 消</el-button>
@@ -274,14 +269,9 @@ export default {
       blockPositionList: [],
       blockPosition: '',
       uploading: false,
-      optionsTab: [{
-        label: '页面',
-        value: '1'
-      }, {
-        label: '组件',
-        value: '2'
-      }],
-      editor: {}
+      optionsTab: [],
+      editor: {},
+      funcList: []
     }
   },
   created() {
@@ -366,11 +356,11 @@ export default {
       }
     },
     // 添加组件到页面
-    add(info) {
+    add(page) {
       this.vscode && this.vscode.postMessage({
         command: 'addPage',
         config: {
-          page: JSON.stringify(info)
+          page: page
         }
       })
     },
@@ -663,6 +653,15 @@ export default {
         return item.id !== component.id
       })
     },
+    // 添加功能项
+    addFunctionItem() {
+      this.funcList.push({
+        id: uuid(),
+        name: '',
+        codes: '',
+        files: []
+      })
+    },
     // 添加文件项
     addComponentItem() {
       const files = []
@@ -692,7 +691,7 @@ export default {
       files.forEach(fileName => {
         const id = uuid()
         this.uploadComponentList.push({
-          id: uuid(),
+          id,
           name: fileName,
           code: '',
           position: '',
@@ -713,7 +712,9 @@ export default {
       this.uploadTypeName = uploadType === '0' ? '组件' : '页面'
       this.uploadComponentList = []
       this.fileList = []
-      this.addComponentItem()
+      if (this.uploadType === '1') {
+        this.addComponentItem()
+      }
       this.formUpload = {
         id: '',
         name: '',
@@ -846,13 +847,27 @@ export default {
         if (res.code === 0) {
           this.$store.commit('setProcessor', res.user.processor)
           if (res.user.processor === '1') {
-            this.optionsTab.push({
+            this.optionsTab = [{
+              label: '页面',
+              value: '1'
+            }, {
+              label: '组件',
+              value: '2'
+            }, {
               label: '申请',
               value: '3'
             }, {
               label: '公用',
               value: '4'
-            })
+            }]
+          } else {
+            this.optionsTab = [{
+              label: '页面',
+              value: '1'
+            }, {
+              label: '组件',
+              value: '2'
+            }]
           }
           this.getTagList()
         }

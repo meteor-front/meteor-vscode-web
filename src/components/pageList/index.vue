@@ -61,11 +61,7 @@ export default {
   },
   methods: {
     add(page) {
-      this.$emit('add', {
-        name: page.description.name,
-        type: '1',
-        description: `(${page.category})`
-      })
+      this.$emit('add', page)
     },
     collection(page) {
       this.$emit('collection', page)
