@@ -390,6 +390,7 @@ export default {
     },
     // 功能块编辑
     funcEdit(func) {
+      console.log('func', func)
       this.funcForm = func
       this.funcBlockTabList = func.funcBlockTabList
       this.funcUploadComponentList = func.funcUploadComponentList
