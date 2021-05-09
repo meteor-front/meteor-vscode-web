@@ -77,7 +77,7 @@
     >
       <el-form ref="formUpload" :model="formUpload" label-width="80px" size="mini">
         <el-form-item :label="uploadTypeName + '名称'">
-          <el-input v-model="formUpload.name" placeholder="crudShop" />
+          <el-input v-model="formUpload.name" :placeholder="uploadType === '0' ? 'mComponent' : 'mPage'" />
         </el-form-item>
         <el-form-item :label="uploadTypeName + '图标'">
           <el-upload
@@ -946,6 +946,7 @@ export default {
       }
       this.funcForm = func
       this.setBlockTabList('func')
+      this.funcUploadComponentList = []
       this.funcVisible = true
       this.$nextTick(() => {
         this.renderMonaco(this.funcBlockActiveTab + 'Func', '', 'func')
