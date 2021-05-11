@@ -96,22 +96,25 @@
             <el-option v-for="tag in tagList" :key="tag.name" :label="tag.name" :value="tag.name" />
           </el-select>
         </el-form-item>
+        <el-form-item v-if="uploadType === '0'" label="类型">
+          <el-select v-model="formUpload.block" placeholder="类型" @change="changeCategory">
+            <el-option v-for="type in typeList" :key="type.name" :label="type.name" :value="type.id" />
+          </el-select>
+        </el-form-item>
         <!-- 代码块 -->
-        <el-form-item v-if="uploadType === '0'" label="">
+        <el-form-item v-if="uploadType === '0'" label="引入示例">
           <el-tabs v-model="blockActiveTab" type="card" editable @edit="blockTabEdit" @tab-click="carouselBlockTab">
             <el-tab-pane v-for="(blockTab) in blockTabList" :key="blockTab.label" :label="blockTab.label" :name="blockTab.name">
               <div :id="blockTab.name" :ref="blockTab.name" class="zl-monaco" />
             </el-tab-pane>
           </el-tabs>
         </el-form-item>
-        <!-- 文件级别 -->
-        <div class="component-list-box">
-          <div v-for="component in uploadComponentList" :key="component.id" class="component-list">
-            <el-button type="danger" circle icon="el-icon-delete" size="mini" class="delete" @click="deleteComponentItem(component)" />
+        <el-form-item v-show="formUpload.block === '0'" :label="uploadType === '0' ? '出口文件' : ''">
+          <div v-for="(component, componentIndex) in uploadComponentList" v-if="componentIndex === 0" :key="component.id" class="component-list">
             <el-row :gutter="10">
-              <el-col :span="8">
+              <el-col :span="12">
                 <el-form-item label="文件名">
-                  <el-input v-model="component.name" placeholder="index.vue" />
+                  <el-input v-model="component.name" class="w150" placeholder="index.vue" />
                 </el-form-item>
               </el-col>
               <el-col v-if="uploadType === '1'" :span="8">
@@ -131,12 +134,43 @@
               <div :id="component.id" :ref="component.id" class="zl-monaco" />
             </el-form-item>
           </div>
-          <el-form-item label="">
-            <el-button type="primary" size="mini" icon="el-icon-plus" @click="addComponentItem">添加文件</el-button>
-          </el-form-item>
-          <el-form-item label="">
+        </el-form-item>
+        <el-form-item v-show="formUpload.block === '0'" :label="uploadType === '0' ? '组件内容' : ''">
+          <!-- 文件级别 -->
+          <div v-show="formUpload.block !== '1'" class="component-list-box">
+            <div v-for="(component, componentIndex) in uploadComponentList" v-if="componentIndex > 0" :key="component.id" class="component-list">
+              <el-button type="danger" circle icon="el-icon-delete" size="mini" class="delete" @click="deleteComponentItem(component)" />
+              <el-row :gutter="10">
+                <el-col :span="12">
+                  <el-form-item label="文件名">
+                    <el-input v-model="component.name" class="w150" placeholder="index.vue" />
+                  </el-form-item>
+                </el-col>
+                <el-col v-if="uploadType === '1'" :span="8">
+                  <el-form-item label="文件类型">
+                    <el-select v-model="component.type" placeholder="文件类型">
+                      <el-option
+                        v-for="item in pageTypeList"
+                        :key="item.name"
+                        :label="item.name"
+                        :value="item.name"
+                      />
+                    </el-select>
+                  </el-form-item>
+                </el-col>
+              </el-row>
+              <el-form-item label="文件内容">
+                <div :id="component.id" :ref="component.id" class="zl-monaco" />
+              </el-form-item>
+            </div>
+            <el-form-item label="">
+              <el-button type="primary" size="mini" icon="el-icon-plus" @click="addComponentItem">添加文件</el-button>
+            </el-form-item>
+          </div>
+        </el-form-item>
+        <div v-show="uploadType === '0' && formUpload.block === '1'" class="component-list-box">
+          <el-form-item v-if="funcList.length > 0" label="">
             <el-table
-              v-if="funcList.length > 0"
               :data="funcList"
               style="width: 100%"
               size="mini"
@@ -240,7 +274,7 @@
           </el-tabs>
         </el-form-item>
         <!-- 文件 -->
-        <div class="component-list-box">
+        <div v-show="uploadType === '0' && formUpload.block !== '1'" class="component-list-box">
           <div v-for="component in funcUploadComponentList" :key="component.id" class="component-list">
             <el-button type="danger" circle icon="el-icon-delete" size="mini" class="delete" @click="funcDeleteComponentItem(component)" />
             <el-row :gutter="10">
@@ -348,7 +382,15 @@ export default {
       funcBlockActiveTab: '',
       funcBlockTabList: [],
       positionType: '',
-      funcUploadComponentList: []
+      funcUploadComponentList: [],
+      typeList: [{
+        id: '0',
+        name: '独立组件'
+      }, {
+        id: '1',
+        name: '代码块组件'
+      }],
+      entryFile: {}
     }
   },
   created() {
@@ -390,7 +432,6 @@ export default {
     },
     // 功能块编辑
     funcEdit(func) {
-      console.log('func', func)
       this.funcForm = func
       this.funcBlockTabList = func.funcBlockTabList
       this.funcUploadComponentList = func.funcUploadComponentList
@@ -653,7 +694,7 @@ export default {
         name: page.description.name,
         avatar: page.description.avatar,
         category: page.category,
-        block: page.block
+        block: page.block + ''
       }
       if (page.description && page.description.avatar) {
         this.fileList = [{
@@ -734,7 +775,7 @@ export default {
         name: page.description.name,
         avatar: page.description.avatar,
         category: page.category,
-        block: page.block
+        block: page.block + ''
       }
       if (page.description && page.description.avatar) {
         this.fileList = [{
@@ -848,6 +889,12 @@ export default {
           type: 'warning'
         })
       }
+      if (this.formUpload.name[0] !== 'm') {
+        return this.$message({
+          message: `名称请已m开头`,
+          type: 'warning'
+        })
+      }
       let code = []
       // 代码块
       let hasCont = false
@@ -865,38 +912,42 @@ export default {
           code: JSON.stringify(this.blockTabList)
         })
       }
-      // 文件
-      for (let i = 0; i < this.uploadComponentList.length; i++) {
-        const uploadComponent = this.uploadComponentList[i]
-        if (this.editor[uploadComponent.id]) {
-          uploadComponent.code = this.editor[uploadComponent.id].getValue()
-        }
-      }
-      code = code.concat(cloneDeep(this.uploadComponentList))
-      // 功能块
-      for (let i = 0; i < this.funcList.length; i++) {
-        const func = this.funcList[i]
-        let hasFuncCont = false
-        for (let i = 0; i < func.funcBlockTabList.length; i++) {
-          const blockTab = func.funcBlockTabList[i]
-          if (blockTab.code) {
-            hasFuncCont = true
+      if (this.formUpload.block === '0') {
+        // 文件
+        for (let i = 0; i < this.uploadComponentList.length; i++) {
+          const uploadComponent = this.uploadComponentList[i]
+          if (this.editor[uploadComponent.id]) {
+            uploadComponent.code = this.editor[uploadComponent.id].getValue()
           }
         }
-        if (hasFuncCont) {
-          code.push({
-            id: uuid(),
-            name: '',
-            type: 'func',
-            code: JSON.stringify(func.funcBlockTabList),
-            position: func.name
+        code = code.concat(cloneDeep(this.uploadComponentList))
+      }
+      // 功能块
+      if (this.formUpload.block === '1') {
+        for (let i = 0; i < this.funcList.length; i++) {
+          const func = this.funcList[i]
+          let hasFuncCont = false
+          for (let i = 0; i < func.funcBlockTabList.length; i++) {
+            const blockTab = func.funcBlockTabList[i]
+            if (blockTab.code) {
+              hasFuncCont = true
+            }
+          }
+          if (hasFuncCont) {
+            code.push({
+              id: uuid(),
+              name: '',
+              type: 'func',
+              code: JSON.stringify(func.funcBlockTabList),
+              position: func.name
+            })
+          }
+          const funcUploadComponentList = cloneDeep(func.funcUploadComponentList)
+          funcUploadComponentList.forEach(componentItem => {
+            componentItem.position = func.name
+            code.push(componentItem)
           })
         }
-        const funcUploadComponentList = cloneDeep(func.funcUploadComponentList)
-        funcUploadComponentList.forEach(componentItem => {
-          componentItem.position = func.name
-          code.push(componentItem)
-        })
       }
       request.post('/component', {
         id: this.formUpload.id,
@@ -924,7 +975,7 @@ export default {
         this.visibleUpload = false
       }).catch((err) => {
         this.$message({
-          message: err.message,
+          message: err.message || '组件重名！',
           type: 'warning'
         })
         console.error(err)
@@ -959,7 +1010,13 @@ export default {
       const index = len > 0 ? len : ''
       switch (this.formUpload.category) {
         case 'vue':
-          files.push('index' + index + '.vue')
+          if (index > 0) {
+            files.push('index' + index + '.vue')
+          } else if (this.uploadType === '1') {
+            files.push('index.vue')
+          } else {
+            files.push('index.js')
+          }
           break
         case 'react':
           files.push('index' + index + '.js')
@@ -1002,15 +1059,13 @@ export default {
       this.uploadTypeName = uploadType === '0' ? '组件' : '页面'
       this.uploadComponentList = []
       this.fileList = []
-      if (this.uploadType === '1') {
-        this.addComponentItem()
-      }
+      this.addComponentItem()
       this.formUpload = {
         id: '',
         name: '',
         category: 'vue',
         avatar: '',
-        block: uploadType === '0' ? 1 : 0
+        block: uploadType === '0' ? '0' : '0'
       }
       this.setBlockTabList('component')
       this.funcList = []
@@ -1350,6 +1405,9 @@ export default {
 }
 .zl-pc {
   display: block;
+}
+.w150 {
+  width: 150px;
 }
 @media screen and (max-width: 550px) {
   .zl-pc {
