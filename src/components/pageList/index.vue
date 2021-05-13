@@ -7,8 +7,15 @@
           <div class="zl-page-title">{{ page.description.name }}</div>
           <div class="zl-page-collect">
             <i :class="page.collection === '1' ? 'el-icon-star-on' : 'el-icon-star-off'" @click="collection(page)" />
-            <i v-if="$store.state.token === page.userId" class="el-icon-edit" @click="modify(page)" />
             <i class="el-icon-circle-plus-outline" @click="add(page)" />
+            <el-dropdown v-if="$store.state.token === page.userId" szie="mini" @command="operate($event, page)">
+              <i class="el-icon-more" />
+              <el-dropdown-menu slot="dropdown">
+                <el-dropdown-item command="0">公共</el-dropdown-item>
+                <el-dropdown-item command="1">编辑</el-dropdown-item>
+                <el-dropdown-item command="2">删除</el-dropdown-item>
+              </el-dropdown-menu>
+            </el-dropdown>
           </div>
         </div>
         <div class="zl-page-container">
@@ -60,6 +67,22 @@ export default {
     this.fetchList()
   },
   methods: {
+    // 页面操作
+    operate(command, page) {
+      switch (command) {
+        case '0':
+          this.applyCommon(page)
+          break
+        case '1':
+          this.modify(page)
+          break
+        case '2':
+          this.deletePage(page)
+          break
+        default:
+          break
+      }
+    },
     add(page) {
       this.$emit('add', page)
     },
@@ -192,7 +215,8 @@ export default {
   font-size: 16px;
   color: #fff;
   cursor: pointer;
-  i + i {
+  i {
+    color: #fff;
     margin-left: 5px;
   }
 }

@@ -430,3 +430,10 @@ body {
   transition: all 0.3s ease;
   color: #1a7304;
 }
+.el-dropdown-menu {
+  padding: 2px 0;
+}
+.el-dropdown-menu__item {
+  line-height: 20px;
+  font-size: 12px;
+}

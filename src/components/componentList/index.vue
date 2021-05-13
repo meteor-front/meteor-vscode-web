@@ -7,8 +7,15 @@
           <div class="zl-page-title">{{ page.description.name }}</div>
           <div class="zl-page-collect">
             <i :class="page.collection === '1' ? 'el-icon-star-on' : 'el-icon-star-off'" @click="collection(page)" />
-            <i v-if="$store.state.token === page.userId" class="el-icon-edit" @click="modify(page)" />
             <i class="el-icon-circle-plus-outline" @click="add(page)" />
+            <el-dropdown v-if="$store.state.token === page.userId" szie="mini" @command="operate($event, page)">
+              <i class="el-icon-more" />
+              <el-dropdown-menu slot="dropdown">
+                <el-dropdown-item command="0">公共</el-dropdown-item>
+                <el-dropdown-item command="1">编辑</el-dropdown-item>
+                <el-dropdown-item command="2">删除</el-dropdown-item>
+              </el-dropdown-menu>
+            </el-dropdown>
           </div>
         </div>
         <div class="zl-page-container">
@@ -17,22 +24,44 @@
             <i v-if="page.block === 0" class="el-icon-document" />
           </div>
           <img :src="page.description.avatar || 'https://www.80fight.cn/zlst/default.png'" alt="" @click="preview(page)">
-          <div v-if="$store.state.token === page.userId" class="zl-page-mani">
-            <el-tooltip effect="dark" content="公共" placement="top">
-              <i class="el-icon-upload" @click="applyCommon(page)" />
-            </el-tooltip>
-          </div>
         </div>
       </div>
       <no-data v-if="pageList.length === 0 && !loading" />
     </div>
+
+    <el-dialog
+      title="功能选择"
+      :visible.sync="visibleFunc"
+      width="400px"
+    >
+      <el-table
+        :data="funcList"
+        style="width: 100%"
+      >
+        <el-table-column
+          label="选择"
+        >
+          <template slot-scope="scope">
+            <el-checkbox v-model="scope.row.select" />
+          </template>
+        </el-table-column>
+        <el-table-column
+          prop="position"
+          label="名称"
+        />
+      </el-table>
+      <div slot="footer">
+        <el-button size="mini" @click="visibleFunc = false">取 消</el-button>
+        <el-button size="mini" type="primary" @click="addPage">确 定</el-button>
+      </div>
+    </el-dialog>
 
   </div>
 </template>
 <script type="text/javascript">
 import request from '@/util/request'
 import noData from './../commons/noData.vue'
-// import { cloneDeep } from 'lodash'
+import { cloneDeep } from 'lodash'
 import search from './../search.vue'
 
 export default {
@@ -51,7 +80,10 @@ export default {
       pageSize: 10,
       totalCount: 1,
       pageList: [],
-      loading: false
+      loading: false,
+      pageSelected: {},
+      funcList: [],
+      visibleFunc: false
     }
   },
   created() {
@@ -61,8 +93,51 @@ export default {
     this.fetchList()
   },
   methods: {
+    // 组件操作
+    operate(command, page) {
+      switch (command) {
+        case '0':
+          this.applyCommon(page)
+          break
+        case '1':
+          this.modify(page)
+          break
+        case '2':
+          this.deletePage(page)
+          break
+        default:
+          break
+      }
+    },
+    addPage() {
+      const code = []
+      this.funcList.forEach(func => {
+        if (func.select) {
+          code.push(func)
+        }
+      })
+      this.pageSelected.code = code
+      this.$emit('add', this.pageSelected)
+      this.visibleFunc = false
+    },
     add(page) {
-      this.$emit('add', page)
+      this.pageSelected = cloneDeep(page)
+      const funcList = []
+      this.pageSelected.code.forEach(codeItem => {
+        if (codeItem.type === 'func') {
+          funcList.push({
+            select: true,
+            ...codeItem
+          })
+        }
+      })
+      if (funcList.length > 0) {
+        // 选择功能块
+        this.funcList = funcList
+        this.visibleFunc = true
+      } else {
+        this.$emit('add', page)
+      }
     },
     collection(page) {
       this.$emit('collection', page)
@@ -208,7 +283,8 @@ export default {
   font-size: 16px;
   color: #fff;
   cursor: pointer;
-  i + i {
+  i {
+    color: #fff;
     margin-left: 5px;
   }
 }
