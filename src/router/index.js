@@ -8,6 +8,7 @@ import CreateProject from '../views/CreateProject.vue'
 import About from '../views/About.vue'
 import Page from '..//views/Page.vue'
 import Test from '../Test.vue'
+import Jenkins from '../views/config/jenkins.vue'
 
 Vue.use(VueRouter)
 
@@ -25,6 +26,10 @@ const routes = [
   {
     path: '/page',
     component: Page
+  },
+  {
+    path: '/jenkins',
+    component: Jenkins
   },
   {
     path: '/test',

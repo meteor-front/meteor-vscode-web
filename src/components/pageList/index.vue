@@ -24,11 +24,6 @@
             <i class="el-icon-document" />
           </div>
           <img :src="page.description.avatar || 'https://www.80fight.cn/zlst/default.png'" alt="" @click="preview(page)">
-          <div v-if="$store.state.token === page.userId" class="zl-page-mani">
-            <el-tooltip effect="dark" content="公共" placement="top">
-              <i class="el-icon-upload" @click="applyCommon(page)" />
-            </el-tooltip>
-          </div>
         </div>
       </div>
       <no-data v-if="pageList.length === 0 && !loading" />
