@@ -79,6 +79,12 @@ export default {
           this.form.token = message.config.token
           this.branches = message.config.branches
           break
+        case 'jenkinsSaveDone':
+          this.$message({
+            message: '保存成功！',
+            type: 'success'
+          })
+          break
         default:
           break
       }
