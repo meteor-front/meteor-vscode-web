@@ -9,6 +9,7 @@ import About from '../views/About.vue'
 import Page from '..//views/Page.vue'
 import Test from '../Test.vue'
 import Jenkins from '../views/config/jenkins.vue'
+import Cloud from '../views/config/cloud.vue'
 
 Vue.use(VueRouter)
 
@@ -30,6 +31,9 @@ const routes = [
   {
     path: '/jenkins',
     component: Jenkins
+  }, {
+    path: '/cloud',
+    component: Cloud
   },
   {
     path: '/test',
