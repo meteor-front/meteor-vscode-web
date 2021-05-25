@@ -109,65 +109,7 @@
             </el-tab-pane>
           </el-tabs>
         </el-form-item>
-        <el-form-item v-show="formUpload.block === '0'" :label="uploadType === '0' ? '出口文件' : ''">
-          <div v-for="(component, componentIndex) in uploadComponentList" v-if="componentIndex === 0" :key="component.id" class="component-list">
-            <el-row :gutter="10">
-              <el-col :span="12">
-                <el-form-item label="文件名">
-                  <el-input v-model="component.name" class="w150" placeholder="index.vue" />
-                </el-form-item>
-              </el-col>
-              <el-col v-if="uploadType === '1'" :span="8">
-                <el-form-item label="文件类型">
-                  <el-select v-model="component.type" placeholder="文件类型">
-                    <el-option
-                      v-for="item in pageTypeList"
-                      :key="item.name"
-                      :label="item.name"
-                      :value="item.name"
-                    />
-                  </el-select>
-                </el-form-item>
-              </el-col>
-            </el-row>
-            <el-form-item label="文件内容">
-              <div :id="component.id" :ref="component.id" class="zl-monaco" />
-            </el-form-item>
-          </div>
-        </el-form-item>
-        <el-form-item v-show="formUpload.block === '0'" :label="uploadType === '0' ? '组件内容' : ''">
-          <!-- 文件级别 -->
-          <div v-show="formUpload.block !== '1'" class="component-list-box">
-            <div v-for="(component, componentIndex) in uploadComponentList" v-if="componentIndex > 0" :key="component.id" class="component-list">
-              <el-button type="danger" circle icon="el-icon-delete" size="mini" class="delete" @click="deleteComponentItem(component)" />
-              <el-row :gutter="10">
-                <el-col :span="12">
-                  <el-form-item label="文件名">
-                    <el-input v-model="component.name" class="w150" placeholder="index.vue" />
-                  </el-form-item>
-                </el-col>
-                <el-col v-if="uploadType === '1'" :span="8">
-                  <el-form-item label="文件类型">
-                    <el-select v-model="component.type" placeholder="文件类型">
-                      <el-option
-                        v-for="item in pageTypeList"
-                        :key="item.name"
-                        :label="item.name"
-                        :value="item.name"
-                      />
-                    </el-select>
-                  </el-form-item>
-                </el-col>
-              </el-row>
-              <el-form-item label="文件内容">
-                <div :id="component.id" :ref="component.id" class="zl-monaco" />
-              </el-form-item>
-            </div>
-            <el-form-item label="">
-              <el-button type="primary" size="mini" icon="el-icon-plus" @click="addComponentItem">添加文件</el-button>
-            </el-form-item>
-          </div>
-        </el-form-item>
+        <!-- 功能块 -->
         <div v-show="uploadType === '0' && formUpload.block === '1'" class="component-list-box">
           <el-form-item v-if="funcList.length > 0" label="">
             <el-table
@@ -201,6 +143,66 @@
             <el-button type="primary" size="mini" icon="el-icon-plus" @click="addFunctionItem">添加功能块</el-button>
           </el-form-item>
         </div>
+        <!-- 文件 -->
+        <el-form-item :label="(uploadType === '0' && formUpload.block === '0') ? '出口文件' : ''">
+          <div v-for="(component, componentIndex) in uploadComponentList" v-if="componentIndex === 0" :key="component.id" class="component-list">
+            <el-row :gutter="10">
+              <el-col :span="12">
+                <el-form-item label="文件名">
+                  <el-input v-model="component.name" class="w150" placeholder="index.vue" />
+                </el-form-item>
+              </el-col>
+              <el-col v-if="uploadType === '1'" :span="8">
+                <el-form-item label="文件类型">
+                  <el-select v-model="component.type" placeholder="文件类型">
+                    <el-option
+                      v-for="item in pageTypeList"
+                      :key="item.name"
+                      :label="item.name"
+                      :value="item.name"
+                    />
+                  </el-select>
+                </el-form-item>
+              </el-col>
+            </el-row>
+            <el-form-item label="文件内容">
+              <div :id="component.id" :ref="component.id" class="zl-monaco" />
+            </el-form-item>
+          </div>
+        </el-form-item>
+        <el-form-item :label="(uploadType === '0' && formUpload.block === '0') ? '组件内容' : ''">
+          <!-- 文件级别 -->
+          <div class="component-list-box">
+            <div v-for="(component, componentIndex) in uploadComponentList" v-if="componentIndex > 0" :key="component.id" class="component-list">
+              <el-button type="danger" circle icon="el-icon-delete" size="mini" class="delete" @click="deleteComponentItem(component)" />
+              <el-row :gutter="10">
+                <el-col :span="12">
+                  <el-form-item label="文件名">
+                    <el-input v-model="component.name" class="w150" placeholder="index.vue" />
+                  </el-form-item>
+                </el-col>
+                <el-col v-if="uploadType === '1'" :span="8">
+                  <el-form-item label="文件类型">
+                    <el-select v-model="component.type" placeholder="文件类型">
+                      <el-option
+                        v-for="item in pageTypeList"
+                        :key="item.name"
+                        :label="item.name"
+                        :value="item.name"
+                      />
+                    </el-select>
+                  </el-form-item>
+                </el-col>
+              </el-row>
+              <el-form-item label="文件内容">
+                <div :id="component.id" :ref="component.id" class="zl-monaco" />
+              </el-form-item>
+            </div>
+            <el-form-item label="">
+              <el-button type="primary" size="mini" icon="el-icon-plus" @click="addComponentItem">添加文件</el-button>
+            </el-form-item>
+          </div>
+        </el-form-item>
       </el-form>
       <div slot="footer">
         <el-button size="mini" @click="beforeCloseUpload">取 消</el-button>
@@ -229,7 +231,7 @@
     <el-dialog
       title=""
       :visible.sync="previewVisible"
-      width="600"
+      width="100%"
       class="m-preview-dialog"
     >
       <div class="m-preview">
@@ -242,7 +244,7 @@
       :visible.sync="blockPositionVisible"
       width="400px"
     >
-      <el-select v-model="blockPosition" class="zl-block" placeholder="请选择块位置">
+      <el-select v-model="blockPosition" filterable class="zl-block" placeholder="请选择块位置">
         <el-option
           v-for="item in blockPositionList"
           :key="item.value"
@@ -912,7 +914,7 @@ export default {
           code: JSON.stringify(this.blockTabList)
         })
       }
-      if (this.formUpload.block === '0') {
+      if (this.uploadComponentList.length > 0) {
         // 文件
         for (let i = 0; i < this.uploadComponentList.length; i++) {
           const uploadComponent = this.uploadComponentList[i]
