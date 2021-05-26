@@ -939,13 +939,20 @@ export default {
       }
       if (this.uploadComponentList.length > 0) {
         // 文件
+        let hasCont = false
         for (let i = 0; i < this.uploadComponentList.length; i++) {
           const uploadComponent = this.uploadComponentList[i]
           if (this.editor[uploadComponent.id]) {
-            uploadComponent.code = this.editor[uploadComponent.id].getValue()
+            const code = this.editor[uploadComponent.id].getValue()
+            uploadComponent.code = code
+            if (code) {
+              hasCont = true
+            }
           }
         }
-        code = code.concat(cloneDeep(this.uploadComponentList))
+        if (hasCont) {
+          code = code.concat(cloneDeep(this.uploadComponentList))
+        }
       }
       // 功能块
       if (this.formUpload.block === '1') {
@@ -974,37 +981,38 @@ export default {
           })
         }
       }
-      request.post('/component', {
-        id: this.formUpload.id,
-        description: {
-          name: this.formUpload.name,
-          avatar: this.formUpload.avatar
-        },
-        category: this.formUpload.category,
-        type: this.uploadType,
-        block: this.formUpload.block,
-        code: code
-      }).then((res) => {
-        if (res.code === 0) {
-          this.$message({
-            message: `${this.formUpload.id ? '编辑' : '添加'}${this.uploadTypeName}成功！`,
-            type: 'success'
-          })
-          this.$bus.$emit('refreshWidget')
-        } else {
-          this.$message({
-            message: res.msg,
-            type: 'warning'
-          })
-        }
-        this.visibleUpload = false
-      }).catch((err) => {
-        this.$message({
-          message: err.message || '组件重名！',
-          type: 'warning'
-        })
-        console.error(err)
-      })
+      console.log(code)
+      // request.post('/component', {
+      //   id: this.formUpload.id,
+      //   description: {
+      //     name: this.formUpload.name,
+      //     avatar: this.formUpload.avatar
+      //   },
+      //   category: this.formUpload.category,
+      //   type: this.uploadType,
+      //   block: this.formUpload.block,
+      //   code: code
+      // }).then((res) => {
+      //   if (res.code === 0) {
+      //     this.$message({
+      //       message: `${this.formUpload.id ? '编辑' : '添加'}${this.uploadTypeName}成功！`,
+      //       type: 'success'
+      //     })
+      //     this.$bus.$emit('refreshWidget')
+      //   } else {
+      //     this.$message({
+      //       message: res.msg,
+      //       type: 'warning'
+      //     })
+      //   }
+      //   this.visibleUpload = false
+      // }).catch((err) => {
+      //   this.$message({
+      //     message: err.message || '组件重名！',
+      //     type: 'warning'
+      //   })
+      //   console.error(err)
+      // })
     },
     // 删除项
     deleteComponentItem(component) {
