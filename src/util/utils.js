@@ -8,7 +8,7 @@ const imgs = {
 }
 export const constant = {
   baseUrl: 'https://www.80fight.cn/api/',
-  // baseUrl: 'http://localhost:8888/',
+  // baseUrl: 'http://localhost:8080/',
   uploadUrl: 'https://www.80fight.cn/api/'
 }
 export default {

@@ -602,7 +602,15 @@ export default {
       }
     },
     // 添加组件到页面
-    add(page) {
+    async add(page) {
+      for (let i = 0; i < page.code.length; i++) {
+        const codeItem = page.code[i]
+        // 大文件处理
+        if (/^@file:/gi.test(codeItem.code)) {
+          const res = await request.get('/getCodeFile?name=' + codeItem.code.replace('@file:', ''))
+          codeItem.code = res.data
+        }
+      }
       this.vscode && this.vscode.postMessage({
         command: 'addPage',
         config: {
@@ -762,7 +770,8 @@ export default {
         }
       })
     },
-    componentModify(page) {
+    async componentModify(page) {
+      console.log(page)
       this.uploading = true
       this.uploadType = '0'
       this.uploadTypeName = '组件'
@@ -817,13 +826,24 @@ export default {
               break
           }
         } else if (codeItem.name) {
-          // 文件
-          uploadComponentList.push({
-            id: uuid(),
-            name: codeItem.name,
-            type: codeItem.type,
-            code: codeItem.code
-          })
+          if (/^@file:/gi.test(codeItem.code)) {
+            const res = await request.get('/getCodeFile?name=' + codeItem.code.replace('@file:', ''))
+            uploadComponentList.push({
+              id: uuid(),
+              name: codeItem.name,
+              type: codeItem.type,
+              code: res.data
+            })
+            codeItem.code = res.data
+          } else {
+            // 文件
+            uploadComponentList.push({
+              id: uuid(),
+              name: codeItem.name,
+              type: codeItem.type,
+              code: codeItem.code
+            })
+          }
         } else {
           // 代码块
           this.blockTabList = JSON.parse(codeItem.code)
@@ -831,7 +851,10 @@ export default {
         }
       }
       this.visibleUpload = true
-      this.renderMonaco(this.blockActiveTab, this.blockTabList[0].code || '', 'block')
+      if (!this.blockTabList[0]) {
+        this.blockTabList = [{ 'label': 'template', 'name': 'template', 'code': '' }, { 'label': 'data', 'name': 'data', 'code': '' }, { 'label': 'methods', 'name': 'methods', 'code': '' }, { 'label': 'style', 'name': 'style', 'code': '' }]
+      }
+      this.renderMonaco(this.blockActiveTab, (this.blockTabList[0] && this.blockTabList[0].code) || '', 'block')
       this.uploadComponentList = uploadComponentList
       this.funcList = funcList
       this.visibleUpload = true
