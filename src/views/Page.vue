@@ -981,38 +981,37 @@ export default {
           })
         }
       }
-      console.log(code)
-      // request.post('/component', {
-      //   id: this.formUpload.id,
-      //   description: {
-      //     name: this.formUpload.name,
-      //     avatar: this.formUpload.avatar
-      //   },
-      //   category: this.formUpload.category,
-      //   type: this.uploadType,
-      //   block: this.formUpload.block,
-      //   code: code
-      // }).then((res) => {
-      //   if (res.code === 0) {
-      //     this.$message({
-      //       message: `${this.formUpload.id ? '编辑' : '添加'}${this.uploadTypeName}成功！`,
-      //       type: 'success'
-      //     })
-      //     this.$bus.$emit('refreshWidget')
-      //   } else {
-      //     this.$message({
-      //       message: res.msg,
-      //       type: 'warning'
-      //     })
-      //   }
-      //   this.visibleUpload = false
-      // }).catch((err) => {
-      //   this.$message({
-      //     message: err.message || '组件重名！',
-      //     type: 'warning'
-      //   })
-      //   console.error(err)
-      // })
+      request.post('/component', {
+        id: this.formUpload.id,
+        description: {
+          name: this.formUpload.name,
+          avatar: this.formUpload.avatar
+        },
+        category: this.formUpload.category,
+        type: this.uploadType,
+        block: this.formUpload.block,
+        code: code
+      }).then((res) => {
+        if (res.code === 0) {
+          this.$message({
+            message: `${this.formUpload.id ? '编辑' : '添加'}${this.uploadTypeName}成功！`,
+            type: 'success'
+          })
+          this.$bus.$emit('refreshWidget')
+        } else {
+          this.$message({
+            message: res.msg,
+            type: 'warning'
+          })
+        }
+        this.visibleUpload = false
+      }).catch((err) => {
+        this.$message({
+          message: err.message || '组件重名！',
+          type: 'warning'
+        })
+        console.error(err)
+      })
     },
     // 删除项
     deleteComponentItem(component) {
