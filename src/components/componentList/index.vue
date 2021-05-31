@@ -116,7 +116,13 @@ export default {
           code.push(func)
         }
       })
-      this.pageSelected.code = code
+      const noFuncCode = []
+      this.pageSelected.code.forEach(codeItem => {
+        if (codeItem.type !== 'func') {
+          noFuncCode.push(codeItem)
+        }
+      })
+      this.pageSelected.code = noFuncCode.concat(code)
       this.$emit('add', this.pageSelected)
       this.visibleFunc = false
     },
