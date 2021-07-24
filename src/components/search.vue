@@ -72,7 +72,8 @@ export default {
     showHandlerPop() {
       this.$emit('showHandlerPop')
     },
-    fetchList() {
+    fetchList(tag) {
+      this.$bus.$emit('setTag', this.form.tag)
       this.$emit('fetchList', this.form)
     },
     toggle(key) {

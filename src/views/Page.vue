@@ -96,7 +96,7 @@
             <el-option v-for="tag in tagList" :key="tag.name" :label="tag.name" :value="tag.name" />
           </el-select>
         </el-form-item>
-        <el-form-item v-if="uploadType === '0'" label="类型">
+        <el-form-item v-if="uploadType === '0' && formUpload.category === 'vue'" label="类型">
           <el-select v-model="formUpload.block" placeholder="类型" @change="changeCategory">
             <el-option v-for="type in typeList" :key="type.name" :label="type.name" :value="type.id" />
           </el-select>
@@ -110,7 +110,7 @@
           </el-tabs>
         </el-form-item>
         <!-- 功能块 -->
-        <div v-show="uploadType === '0' && formUpload.block === '1'" class="component-list-box">
+        <div v-show="uploadType === '0' && formUpload.block === '1' && formUpload.category === 'vue'" class="component-list-box">
           <el-form-item v-if="funcList.length > 0" label="">
             <el-table
               :data="funcList"
@@ -144,7 +144,7 @@
           </el-form-item>
         </div>
         <!-- 文件 -->
-        <el-form-item :label="(uploadType === '0' && formUpload.block === '0') ? '出口文件' : ''">
+        <el-form-item v-if="formUpload.category === 'vue'" :label="(uploadType === '0' && formUpload.block === '0') ? '出口文件' : ''">
           <div v-for="(component, componentIndex) in uploadComponentList" v-if="componentIndex === 0" :key="component.id" class="component-list">
             <el-row :gutter="10">
               <el-col :span="12">
@@ -170,7 +170,7 @@
             </el-form-item>
           </div>
         </el-form-item>
-        <el-form-item :label="(uploadType === '0' && formUpload.block === '0') ? '组件内容' : ''">
+        <el-form-item v-if="formUpload.category === 'vue'" :label="(uploadType === '0' && formUpload.block === '0') ? '组件内容' : ''">
           <!-- 文件级别 -->
           <div class="component-list-box">
             <div v-for="(component, componentIndex) in uploadComponentList" v-if="componentIndex > 0" :key="component.id" class="component-list">
@@ -401,6 +401,7 @@ export default {
     if (process.env.NODE_ENV === 'development') {
       this.mock()
     }
+    this.$bus.$on('setTag', this.setTag)
     // this.openUploadDialog('0')
   },
   mounted() {
@@ -419,6 +420,9 @@ export default {
     }
   },
   methods: {
+    setTag(tag) {
+      this.formUpload.category = tag
+    },
     // 功能块删除
     funcDel(func) {
       this.$confirm('确定删除该功能块?', '提示', {
@@ -635,6 +639,7 @@ export default {
       })
     },
     changeCategory() {
+      console.log(this.formUpload.category)
       if (this.formUpload.block === 1) {
         this.setBlockTabList('component')
       }
@@ -1037,6 +1042,7 @@ export default {
     },
     // 添加文件项
     addComponentItem() {
+      console.log('category', this.formUpload.category)
       const files = []
       const len = this.uploadComponentList.length
       const index = len > 0 ? len : ''
@@ -1095,7 +1101,7 @@ export default {
       this.formUpload = {
         id: '',
         name: '',
-        category: 'vue',
+        category: this.formUpload.category || 'vue',
         avatar: '',
         block: uploadType === '0' ? '0' : '0'
       }
