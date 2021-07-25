@@ -23,8 +23,8 @@
             上传 <i class="el-icon-arrow-down el-icon--right" />
           </el-button>
           <el-dropdown-menu slot="dropdown">
-            <el-dropdown-item command="1">上传页面</el-dropdown-item>
-            <el-dropdown-item command="0">上传组件</el-dropdown-item>
+            <el-dropdown-item v-if="tabActive === '1'" command="1">上传页面</el-dropdown-item>
+            <el-dropdown-item v-if="tabActive === '2'" command="0">上传组件</el-dropdown-item>
           </el-dropdown-menu>
         </el-dropdown>
       </div>
@@ -33,8 +33,8 @@
       </div> -->
       <div class="zl-right">
         <!-- <el-button type="text" size="medium" icon="el-icon-document" @click="previewJson">json查看 </el-button> -->
-        <el-button v-if="user" type="text" size="medium" icon="el-icon-upload" @click="openUploadDialog('1')">上传页面</el-button>
-        <el-button v-if="user" type="text" size="medium" icon="el-icon-upload" @click="openUploadDialog('0')">上传组件</el-button>
+        <el-button v-if="user && tabActive === '1'" type="text" size="medium" icon="el-icon-upload" @click="openUploadDialog('1')">上传页面</el-button>
+        <el-button v-if="user && tabActive === '2'" type="text" size="medium" icon="el-icon-upload" @click="openUploadDialog('0')">上传组件</el-button>
         <!-- <el-button v-if="user" type="text" size="medium" icon="el-icon-document" @click="generateCode">生成代码</el-button> -->
         <!-- <el-button type="text" size="medium" icon="el-icon-document" @click="generatePageStyle">样式</el-button> -->
         <!-- <el-button v-if="user" type="text" icon="el-icon-setting" @click="visibleConfig = true">配置信息</el-button> -->
@@ -144,7 +144,7 @@
           </el-form-item>
         </div>
         <!-- 文件 -->
-        <el-form-item v-if="formUpload.category === 'vue'" :label="(uploadType === '0' && formUpload.block === '0') ? '出口文件' : ''">
+        <el-form-item v-if="(tabActive === '2' && formUpload.category === 'vue') || tabActive === '1'" :label="(uploadType === '0' && formUpload.block === '0') ? '出口文件' : ''">
           <div v-for="(component, componentIndex) in uploadComponentList" v-if="componentIndex === 0" :key="component.id" class="component-list">
             <el-row :gutter="10">
               <el-col :span="12">
@@ -170,7 +170,7 @@
             </el-form-item>
           </div>
         </el-form-item>
-        <el-form-item v-if="formUpload.category === 'vue'" :label="(uploadType === '0' && formUpload.block === '0') ? '组件内容' : ''">
+        <el-form-item v-if="(tabActive === '2' && formUpload.category === 'vue') || tabActive === '1'" :label="(uploadType === '0' && formUpload.block === '0') ? '组件内容' : ''">
           <!-- 文件级别 -->
           <div class="component-list-box">
             <div v-for="(component, componentIndex) in uploadComponentList" v-if="componentIndex > 0" :key="component.id" class="component-list">
@@ -639,7 +639,6 @@ export default {
       })
     },
     changeCategory() {
-      console.log(this.formUpload.category)
       if (this.formUpload.block === 1) {
         this.setBlockTabList('component')
       }
@@ -776,7 +775,6 @@ export default {
       })
     },
     async componentModify(page) {
-      console.log(page)
       this.uploading = true
       this.uploadType = '0'
       this.uploadTypeName = '组件'
@@ -899,7 +897,7 @@ export default {
               this.getUserInfo()
             }
           }).catch((err) => {
-            console.log(err)
+            console.info(err)
           })
         } else {
           return false
@@ -1042,7 +1040,6 @@ export default {
     },
     // 添加文件项
     addComponentItem() {
-      console.log('category', this.formUpload.category)
       const files = []
       const len = this.uploadComponentList.length
       const index = len > 0 ? len : ''
@@ -1237,7 +1234,7 @@ export default {
       this.setCurrentTag()
       request.get(`/ownTag?tag=${tag.name}`).then((result) => {
       }).catch((err) => {
-        console.log(err)
+        console.info(err)
       })
     },
     // 获取用户信息
@@ -1314,7 +1311,7 @@ export default {
         this.$store.commit('setToken', this.user.token + '')
         this.setCurrentTag()
       }).catch((error) => {
-        console.log(error)
+        console.info(error)
       })
     },
     // 进入预览模式
