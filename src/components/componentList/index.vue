@@ -8,7 +8,7 @@
           <div class="zl-page-collect">
             <i :class="page.collection === '1' ? 'el-icon-star-on' : 'el-icon-star-off'" @click="collection(page)" />
             <i class="el-icon-circle-plus-outline" @click="add(page)" />
-            <el-dropdown v-if="$store.state.token === page.userId" szie="mini" @command="operate($event, page)">
+            <el-dropdown v-if="$store.state.token === page.userId || $store.state.token === page.applier" szie="mini" @command="operate($event, page)">
               <i class="el-icon-more" />
               <el-dropdown-menu slot="dropdown">
                 <el-dropdown-item command="0">公共</el-dropdown-item>

@@ -174,13 +174,6 @@ export default {
       if (agree) {
         page.applier = '999999999'
         message = '确定通过?'
-      }
-      page.apply = ''
-      this.$confirm(message, '提示', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning'
-      }).then(() => {
         request.post('/applyAgree', page).then((res) => {
           if (res.code === 0) {
             this.$message({
@@ -197,8 +190,32 @@ export default {
         }).catch((err) => {
           console.error(err)
         })
-      }).catch(() => {
-      })
+      } else {
+        page.apply = ''
+        this.$confirm(message, '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
+          request.post('/applyAgree', page).then((res) => {
+            if (res.code === 0) {
+              this.$message({
+                message: '处理成功！',
+                type: 'success'
+              })
+            } else {
+              this.$message({
+                message: '处理失败',
+                type: 'success'
+              })
+            }
+            this.fetchList()
+          }).catch((err) => {
+            console.error(err)
+          })
+        }).catch(() => {
+        })
+      }
     },
     preview(page) {
       this.$emit('preview', page)
