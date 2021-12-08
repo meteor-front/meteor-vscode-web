@@ -11,6 +11,7 @@ import Draggable from 'vuedraggable'
 import Widget from '@/components/factory/render/widget'
 import '@/components/common/index'
 import ZoomOnHover from 'vue-zoom-on-hover'
+import './theme/index.scss'
 
 // 将属性组件挂载到全局
 import ComponentAttribute from '@/components/factory/attribute/index'

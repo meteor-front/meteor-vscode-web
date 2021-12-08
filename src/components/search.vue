@@ -57,7 +57,7 @@ export default {
         '2': '组件',
         '3': '页面/组件'
       }
-      return `请输入${tabNames[this.tab]}名称，enter查询`
+      return `请输入${tabNames[this.tab]}名称`
     }
   },
   created() {
