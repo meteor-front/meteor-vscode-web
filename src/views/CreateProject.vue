@@ -140,7 +140,7 @@ export default {
       selImg: utils.imgs.sel,
       templateTypeIndex: 0,
       templateIndex: 0,
-      loading: false,
+      loading: true,
       loadingImage: utils.imgs.loading,
       visibleAccount: false,
       formAccount: {
@@ -325,16 +325,16 @@ export default {
   right: 0;
   bottom: 0;
   z-index: 9999;
-  background-color: rgba(0, 0, 0, 0.1);
+  background-color: rgba(255, 255, 255, 0.4);
 }
 .loading img {
   position: absolute;
   left: 50%;
   top: 50%;
   transform: translate(-50%, -50%);
-  width: 50px;
-  height: 50px;
-  animation: round 0.5s linear infinite;
+  width: 40px;
+  height: 40px;
+  animation: round 1s linear infinite;
 }
 .loading.hide {
   display: none;
