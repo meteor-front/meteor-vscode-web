@@ -6,25 +6,25 @@
       <span class="ml10">中铝视拓创建新工程指引，快速创建各端应用工程</span>
     </div>
     <div class="zl-container">
-      <el-form ref="form" label-width="80px" size="mini">
+      <el-form ref="form" label-width="80px" :model="form" :rules="rules" size="mini">
         <el-row :gutter="10">
           <el-col :span="12">
-            <el-form-item label="本地目录">
+            <el-form-item label="本地目录" prop="baseDir">
               <div class="zl-dir">
                 <div class="point" @click="openFolder" />
-                <el-input v-model="baseDir" readonly placeholder="请选择工程目录">
+                <el-input v-model="form.baseDir" readonly placeholder="请选择本地目录">
                   <i slot="suffix" class="el-icon-folder" />
                 </el-input>
               </div>
             </el-form-item>
           </el-col>
           <el-col :span="12">
-            <el-form-item label="项目名称">
-              <el-input v-model="projectName" placeholder="请输入工程名称" />
+            <el-form-item label="项目名称" prop="projectName">
+              <el-input v-model="projectName" placeholder="请输入项目名称" />
             </el-form-item>
           </el-col>
           <el-col :span="24">
-            <el-form-item label="选择模板">
+            <el-form-item label="模板">
               <el-tabs v-model="activeTemplate" @tab-click="selectTemplateType">
                 <el-tab-pane v-for="(template, templateId) in templateObj" :key="templateId" :name="template.id">
                   <div slot="label" class="zl-template">
@@ -45,7 +45,7 @@
             </el-form-item>
           </el-col>
           <el-col :span="24">
-            <el-form-item label="仓库地址">
+            <el-form-item label="仓库">
               <el-input v-model="hub" placeholder="请输入仓库地址" />
             </el-form-item>
           </el-col>
@@ -88,7 +88,9 @@ export default {
   data() {
     return {
       vscode: null,
-      baseDir: '',
+      form: {
+        baseDir: ''
+      },
       currentCount: '',
       templateObj: [{
         id: '0',
@@ -140,7 +142,7 @@ export default {
       selImg: utils.imgs.sel,
       templateTypeIndex: 0,
       templateIndex: 0,
-      loading: true,
+      loading: false,
       loadingImage: utils.imgs.loading,
       visibleAccount: false,
       formAccount: {
@@ -150,6 +152,10 @@ export default {
       ruleAccount: {
         name: { required: true, message: '请输入账号名称', trigger: 'blur' },
         password: { required: true, message: '请输入账号密码', trigger: 'blur' }
+      },
+      rules: {
+        baseDir: { required: true, message: '请选择本地存放目录', trigger: 'blur' },
+        projectName: { required: true, message: '请输入工程名称', trigger: 'blur' }
       },
       activeTemplate: '0'
     }
@@ -191,7 +197,7 @@ export default {
             url: this.url,
             hub: this.hub,
             projectName: this.projectName,
-            baseDir: this.baseDir,
+            baseDir: this.form.baseDir,
             account: this.formAccount
           })
         } else {
@@ -201,15 +207,15 @@ export default {
     },
     // 创建新工程
     createProject() {
-      if (!this.baseDir) {
+      if (!this.form.baseDir) {
         return this.$message({
-          message: '请选择项目存放目录！',
+          message: '请选择项目存放本地目录！',
           type: 'warning'
         })
       }
       if (!this.projectName) {
         return this.$message({
-          message: '请输入工程名！',
+          message: '请输入项目名称！',
           type: 'warning'
         })
       }
@@ -219,7 +225,7 @@ export default {
         url: this.url,
         hub: this.hub,
         projectName: this.projectName,
-        baseDir: this.baseDir
+        baseDir: this.form.baseDir
       })
     },
     // 选择模板
@@ -253,7 +259,7 @@ export default {
           this.currentCount = Math.ceil(this.currentCount * 0.5)
           break
         case 'path':
-          this.baseDir = message.path
+          this.form.baseDir = message.path
           break
         case 'done':
           this.loading = false
@@ -267,7 +273,7 @@ export default {
     openFolder() {
       this.vscode.postMessage({
         command: 'selBaseDir',
-        baseDir: this.baseDir
+        baseDir: this.form.baseDir
       })
     }
   }
